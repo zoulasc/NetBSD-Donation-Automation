@@ -1,0 +1,32 @@
+CREATE DATABASE test_database
+  WITH OWNER = test_user
+       ENCODING = 'UTF8';
+
+
+CREATE SCHEMA "netbsd"
+  AUTHORIZATION test_user;
+
+
+CREATE TABLE netbsd.paypal_donation_details
+(
+  confirmation_no character varying NOT NULL,
+  contributor text NOT NULL,
+  amount money,
+  currency text,
+  quantity integer,
+  email character varying,
+  donation_date text,
+  CONSTRAINT paypal_id PRIMARY KEY (confirmation_no)
+);
+ALTER TABLE netbsd.paypal_donation_details
+  OWNER TO test_user;
+
+CREATE TABLE netbsd.stripe_donation_details
+(
+  payment_id character varying NOT NULL,
+  contributor_email character varying,
+  amount money,
+  CONSTRAINT stripe_id PRIMARY KEY (payment_id)
+);
+ALTER TABLE netbsd.stripe_donation_details
+  OWNER TO test_user;
