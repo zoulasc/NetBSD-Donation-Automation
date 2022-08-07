@@ -7,26 +7,17 @@ CREATE SCHEMA "netbsd"
   AUTHORIZATION test_user;
 
 
-CREATE TABLE netbsd.paypal_donation_details
+CREATE TABLE netbsd.donation_details
 (
   confirmation_no character varying NOT NULL,
-  contributor text NOT NULL,
-  amount money,
-  currency text,
+  contributor character varying,
+  currency character varying,
   quantity integer,
-  email character varying,
-  donation_date text,
+  email character varying NOT NULL,
+  vendor character varying NOT NULL,
+  datetime character varying,
+  amount character varying NOT NULL,
   CONSTRAINT paypal_id PRIMARY KEY (confirmation_no)
 );
-ALTER TABLE netbsd.paypal_donation_details
-  OWNER TO test_user;
-
-CREATE TABLE netbsd.stripe_donation_details
-(
-  payment_id character varying NOT NULL,
-  contributor_email character varying,
-  amount money,
-  CONSTRAINT stripe_id PRIMARY KEY (payment_id)
-);
-ALTER TABLE netbsd.stripe_donation_details
+ALTER TABLE netbsd.donation_details
   OWNER TO test_user;
