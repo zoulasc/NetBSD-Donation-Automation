@@ -1,6 +1,7 @@
 """parser for extracting details from donation emails"""
 
 # pylint: disable=too-few-public-methods
+# pylint: disable=no-self-use
 
 from typing import Dict, List
 import sys
@@ -20,6 +21,7 @@ class HTMLFile:
             self.base_html = BeautifulSoup(h_file, "html.parser")
         self.span_list = self.base_html.find_all("span")
 
+
 PAYPAL_TEXT = [
     "This",
     "email",
@@ -36,6 +38,7 @@ PAYPAL_TEXT = [
 STRIPE1_TEXT = "Congratulations netbsd.org!"
 STRIPE2_TEXT = "You've just received a payment through Stripe."
 
+
 class ByPayPal:
     """for donations made by PayPal"""
 
@@ -49,7 +52,7 @@ class ByPayPal:
         for i in str(self.html_file.base_html).split("\n"):
             words = i.split()
             if words and words[0] == "Date:":
-                return parsedate(i[6:])
+                return parsedate(i[6:]).strftime("%a %d-%m-%Y %I-%M-%S %z %Z")
         return None
 
     def get_email(self) -> str:
@@ -61,11 +64,9 @@ class ByPayPal:
 
     def get_details(self) -> Dict[str, str]:
         """collect all donor details from the html file"""
-        details = {}
+        details = {"vendor" : "PayPal"}
         fixme = (
-            str(
-                self.html_file.base_html.find(id="cartDetails").get_text()
-            ).strip()
+            str(self.html_file.base_html.find(id="cartDetails").get_text()).strip()
         ).split(
             "\n\n\n"
         )  # get details(in text) from the tag with id="cartDetails"
@@ -73,7 +74,7 @@ class ByPayPal:
             fixme[i] = field.split("\n")[-1]
         details["amount"] = fixme[0]
         details["currency"] = fixme[1]
-        details["confirmation_no."] = fixme[2]
+        details["confirmation_no"] = fixme[2]
         details["quantity"] = fixme[3]
         details["contributor"] = fixme[4]
         details["email"] = self.get_email()
@@ -103,16 +104,18 @@ class ByStripe:
 
     def get_text_details(self, text: List[str]) -> Dict[str, str]:
         """collect all donor details from the text file"""
-        details = {}
+        details = {"vendor" : "Stripe"}
+
         def get_field(i: int) -> str:
             return text[i + 1].split()[0]
+
         for i, line in enumerate(text):
             if line == "-\nPayment":
                 details["amount"] = get_field(i)
             if line == "-\nCustomer":
-                details["customer"] = get_field(i)
+                details["email"] = get_field(i)
             if line == "-\nPayment ID":
-                details["payment_id"] = text[i + 1]
+                details["confirmation_no"] = text[i + 1]
         return details
 
     def is_text_donation(self, text: List[str]) -> bool:
@@ -132,7 +135,7 @@ class ByStripe:
 
     def get_html_details(self) -> Dict[str, str]:
         """collect all donor details from the html file"""
-        details = {}
+        details = {"vendor" : "Stripe"}
         for i in self.html_file.base_html(["style", "script"]):
             i.decompose()
         lst = list((self.html_file.base_html).stripped_strings)
@@ -140,9 +143,9 @@ class ByStripe:
             if item == "Payment":
                 details["amount"] = lst[i + 1]
             if item == "Customer":
-                details["customer"] = lst[i + 1]
+                details["email"] = lst[i + 1]
             if item == "Payment ID":
-                details["payment_id"] = lst[i + 1]
+                details["confirmation_no"] = lst[i + 1]
         return details
 
     def is_html_donation(self, span: str) -> bool:
@@ -188,7 +191,6 @@ for vendor in VENDORS:
         break
 
 if d is None:
-    print(f"{sys.argv[0]}: No vendor matched data for `{sys.argv[1]}'",
-          file=sys.stderr)
+    print(f"{sys.argv[0]}: No vendor matched data for `{sys.argv[1]}'", file=sys.stderr)
     sys.exit(1)
 print(d)
