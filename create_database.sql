@@ -3,11 +3,12 @@ ALTER USER test_user WITH SUPERUSER;
 
 
 CREATE DATABASE test_database
-  WITH OWNER = test_user
-       ENCODING = 'UTF8';
+  WITH TEMPLATE = template0
+       OWNER = test_user
+        ENCODING = 'UTF8';
 
 
-\c test_database
+\c test_database 
 
 
 CREATE SCHEMA "netbsd"
