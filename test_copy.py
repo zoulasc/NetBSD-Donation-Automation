@@ -41,6 +41,12 @@ PAYPAL_TEXT = [
 STRIPE1_TEXT = "Congratulations netbsd.org!"
 STRIPE2_TEXT = "You've just received a payment through Stripe."
 
+SQL = """
+PREPARE SQL (text, text, text, int, text, text, text, text) AS
+INSERT INTO netbsd.donation_details VALUES($1, $2, $3, $4, $5, $6, $7, $8);
+EXECUTE SQL(%s, %s, %s, %s, %s, %s, %s, %s);
+"""
+
 
 class ByPayPal:
     """for donations made by PayPal"""
@@ -149,6 +155,11 @@ class ByStripe:
                 details["email"] = lst[i + 1]
             if item == "Payment ID":
                 details["confirmation_no"] = lst[i + 1]
+            # We don't have the information
+            data["contributor"] = None
+            data["currency"] = None
+            data["quantity"] = None
+            data["datetime"] = None
         return details
 
     def is_html_donation(self, span: str) -> bool:
@@ -217,40 +228,19 @@ def prepare_and_insert(connection, data: Dict[str, str]) -> None:
     connection.autocommit = False
     cursor = connection.cursor()
     # preparing and inserting data in the database
-    if data["vendor"] == "PayPal":
-        sql = """PREPARE SQL (text, text, text, int, text, text, text, text) AS
-        INSERT INTO netbsd.donation_details VALUES($1, $2, $3, $4, $5, $6, $7, $8);
-        EXECUTE SQL(%s, %s, %s, %s, %s, %s, %s, %s);"""
-        cursor.execute(
-            sql,
-            (
-                data["confirmation_no"],
-                data["contributor"],
-                data["currency"],
-                data["quantity"],
-                data["email"],
-                data["vendor"],
-                data["datetime"],
-                data["amount"],
-            ),
-        )
-    else:
-        sql = """PREPARE SQL (text, text, text, int, text, text, text, text) AS
-        INSERT INTO netbsd.donation_details VALUES($1, $2, $3, $4, $5, $6, $7, $8);
-        EXECUTE SQL(%s, %s, %s, %s, %s, %s, %s, %s);"""
-        cursor.execute(
-            sql,
-            (
-                data["confirmation_no"],
-                None,
-                None,
-                None,
-                data["email"],
-                data["vendor"],
-                None,
-                data["amount"],
-            ),
-        )
+    cursor.execute(
+        SQL,
+        (
+            data["confirmation_no"],
+            data["contributor"],
+            data["currency"],
+            data["quantity"],
+            data["email"],
+            data["vendor"],
+            data["datetime"],
+            data["amount"],
+        ),
+    )
 
 
 def commit_and_close(connection) -> None:
