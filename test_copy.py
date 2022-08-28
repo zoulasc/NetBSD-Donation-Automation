@@ -8,6 +8,7 @@ import sys
 import ssl
 import datetime
 import smtplib
+from configparser import ConfigParser
 import psycopg2
 from dateutil.parser import parse as parsedate
 from bs4 import BeautifulSoup
@@ -40,12 +41,6 @@ PAYPAL_TEXT = [
 
 STRIPE1_TEXT = "Congratulations netbsd.org!"
 STRIPE2_TEXT = "You've just received a payment through Stripe."
-
-SQL = """
-PREPARE SQL (text, text, text, int, text, text, text, text) AS
-INSERT INTO netbsd.donation_details VALUES($1, $2, $3, $4, $5, $6, $7, $8);
-EXECUTE SQL(%s, %s, %s, %s, %s, %s, %s, %s);
-"""
 
 
 class ByPayPal:
@@ -155,11 +150,6 @@ class ByStripe:
                 details["email"] = lst[i + 1]
             if item == "Payment ID":
                 details["confirmation_no"] = lst[i + 1]
-            # We don't have the information
-            data["contributor"] = None
-            data["currency"] = None
-            data["quantity"] = None
-            data["datetime"] = None
         return details
 
     def is_html_donation(self, span: str) -> bool:
@@ -196,12 +186,14 @@ class ByStripe:
 
 def forward(h_file: HTMLFile) -> None:
     """forward unparsed emails"""
-    # enter these details before running the program
-    smtp_server = ""
-    port_no = ""
-    sender_email = ""
-    sender_password = ""
-    receiver_email = ""
+    # enter these details in config.ini before running the program
+    config = ConfigParser()
+    config.read("config.ini")
+    smtp_server = config["smtp"]["server"]
+    port_no = config["smtp"]["port"]
+    sender_email = config["email"]["sender"]
+    sender_password = config["email"]["password"]
+    receiver_email = config["email"]["receiver"]
     msg = f"{h_file.base_html}"
     context = ssl.create_default_context()
     server = smtplib.SMTP_SSL(smtp_server, int(port_no), context=context)
@@ -228,19 +220,40 @@ def prepare_and_insert(connection, data: Dict[str, str]) -> None:
     connection.autocommit = False
     cursor = connection.cursor()
     # preparing and inserting data in the database
-    cursor.execute(
-        SQL,
-        (
-            data["confirmation_no"],
-            data["contributor"],
-            data["currency"],
-            data["quantity"],
-            data["email"],
-            data["vendor"],
-            data["datetime"],
-            data["amount"],
-        ),
-    )
+    if data["vendor"] == "PayPal":
+        sql = """PREPARE SQL (text, text, text, int, text, text, text, text) AS
+        INSERT INTO netbsd.donation_details VALUES($1, $2, $3, $4, $5, $6, $7, $8);
+        EXECUTE SQL(%s, %s, %s, %s, %s, %s, %s, %s);"""
+        cursor.execute(
+            sql,
+            (
+                data["confirmation_no"],
+                data["contributor"],
+                data["currency"],
+                data["quantity"],
+                data["email"],
+                data["vendor"],
+                data["datetime"],
+                data["amount"],
+            ),
+        )
+    else:
+        sql = """PREPARE SQL (text, text, text, int, text, text, text, text) AS
+        INSERT INTO netbsd.donation_details VALUES($1, $2, $3, $4, $5, $6, $7, $8);
+        EXECUTE SQL(%s, %s, %s, %s, %s, %s, %s, %s);"""
+        cursor.execute(
+            sql,
+            (
+                data["confirmation_no"],
+                None,
+                None,
+                None,
+                data["email"],
+                data["vendor"],
+                None,
+                data["amount"],
+            ),
+        )
 
 
 def commit_and_close(connection) -> None:
