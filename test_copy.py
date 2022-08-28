@@ -157,10 +157,10 @@ class ByStripe:
             if item == "Payment ID":
                 details["confirmation_no"] = lst[i + 1]
             # We don't have the information
-            data["contributor"] = None
-            data["currency"] = None
-            data["quantity"] = None
-            data["datetime"] = None
+            details["contributor"] = None
+            details["currency"] = None
+            details["quantity"] = None
+            details["datetime"] = None
         return details
 
     def is_html_donation(self, span: str) -> bool:
