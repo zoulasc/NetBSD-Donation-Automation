@@ -260,6 +260,24 @@ def insert_record(data: Dict[str, str]) -> None:
     commit_and_close(connection)
 
 
+def reply(data: Dict[str, str]) -> None:
+    """auto reply to the donor"""
+    # enter these details in config.ini before running the program
+    config = ConfigParser()
+    config.read("config.ini")
+    smtp_server = config["smtp"]["server"]
+    port_no = config["smtp"]["port"]
+    sender_email = config["email"]["sender"]
+    sender_password = config["email"]["password"]
+    receiver_email = data["email"]
+    msg = "This is an acknowledgement for the donation you made to The NetBSD Foundation. Thank You! for your contributions."
+    context = ssl.create_default_context()
+    server = smtplib.SMTP_SSL(smtp_server, int(port_no), context=context)
+    server.login(sender_email, sender_password)
+    server.sendmail(sender_email, receiver_email, msg)
+    server.quit()
+
+
 ###Driver Code###
 h = HTMLFile(sys.argv[1])
 VENDORS = [ByPayPal, ByStripe]
@@ -276,3 +294,4 @@ if d is None:
     sys.exit(1)
 
 insert_record(d)
+reply(d)
