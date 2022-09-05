@@ -264,13 +264,14 @@ def reply(data: Dict[str, str]) -> None:
     """auto reply to the donor"""
     # enter these details in config.ini before running the program
     config = ConfigParser()
-    config.read("config.ini")
+    config.read("config.ini", encoding="utf-8")
     smtp_server = config["smtp"]["server"]
     port_no = config["smtp"]["port"]
     sender_email = config["email"]["sender"]
     sender_password = config["email"]["password"]
     receiver_email = data["email"]
-    msg = "This is an acknowledgement for the donation you made to The NetBSD Foundation. Thank You! for your contributions."
+    ack_text = config["msg"]["text"]
+    msg = ack_text.format(data)
     context = ssl.create_default_context()
     server = smtplib.SMTP_SSL(smtp_server, int(port_no), context=context)
     server.login(sender_email, sender_password)
