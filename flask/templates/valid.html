@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Feedback{% endblock %}
+{% block content %}
+<div class="container">
+	<h1 style="text-align:center;">Please provide your feedback</h1>
+	<br/><br/>
+	<form  style="text-align:left;" method="POST" action="/store/{{fid}}">
+		<p>Should we put your name on our public list of contributors?</p>
+  		<input type="radio" name="answer1" id="Yes" value=1 >
+  		<label for="Yes">Yes</label><br>
+  		<input type="radio" name="answer1" id="No" value=0>
+  		<label for="No">No</label><br>
+  		<br>  
+                <label for="InputName" class="form-label">If you answered yes above, how would you like your name to appear?</label>
+                <input type="text" class="form-control" id="InputName" name="name">
+  		<br>  
+  		<p>Should we put your e-mail address on our public list of contributors?</p>
+  		<input type="radio" name="answer2" id="Yes" value=1 >
+  		<label for="Yes">Yes</label><br>
+  		<input type="radio" name="answer2" id="No" value=0>
+  		<label for="No">No</label><br>
+		<br>
+                <label for="InputEmail1" class="form-label">If you answered yes above, what e-mail address would you like to use?</label>
+                <input type="email" class="form-control" id="InputEmail1" placeholder="example@email.com" name="email">
+  		<br>
+		<p>May we inform you by direct e-mail of the need for similar assistance in the future?</p>
+  		<input type="radio" name="answer3" id="Yes" value=1 >
+  		<label for="Yes">Yes</label><br>
+  		<input type="radio" name="answer3" id="No" value=0>
+  		<label for="No">No</label><br>
+  		<br>  
+                <label for="notification_email" class="form-label">If you answered yes above, please indicate your preferred e-mail address for such notifications.</label>
+                <input type="email" class="form-control" placeholder="example@email.com" id="notification_email" name="notificationE-mail">
+  		<br>  
+            	<button type="submit" class="btn btn-primary">Submit</button>
+    	</form>
+	<br/><br/>
+	<p>Once again, I'd like to take this opportunity to thank you for your support.<br/><br/>Sincerely,<br/>Christos Zoulas<br/>On behalf of The Finance Executive Committee of the NetBSD Foundation, Inc.</p>
+	<br/><br/>
+</div>
+<script>
+document.getElementById("myForm").reset();
+</script>
+{% endblock %}
