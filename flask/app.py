@@ -3,7 +3,7 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-def get_db_connection():
+def get_db_connection() -> psycopg2.extensions.connection:
     """establishing connection with database"""
     conn = psycopg2.connect(
         database="test_database",
@@ -30,12 +30,12 @@ EXECUTE SQL(%s, %s, %s, %s, %s, %s, %s);
 
 
 @app.route('/')
-def index():
+def index() -> str:
     return render_template('index.html')
 
 
 @app.route('/validate', methods=['POST'])
-def validate():
+def validate() -> str:
     fid=request.form['feed']
     conn = get_db_connection()
     cur = conn.cursor()
@@ -49,7 +49,7 @@ def validate():
 
 
 @app.route('/store/<string:fid>', methods=['POST'])
-def store(fid):
+def store(fid: str) -> str:
     answer1=request.form["answer1"]
     name=request.form["name"]
     answer2=request.form["answer2"]
