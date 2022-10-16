@@ -1,1 +1,1 @@
-Code for Feedback site using Flask framework.
+Code for feedback site using Flask framework.
