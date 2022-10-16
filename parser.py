@@ -126,6 +126,11 @@ class ByStripe:
                 details["email"] = get_field(i)
             if line == "-\nPayment ID":
                 details["confirmation_no"] = text[i + 1]
+            # We don't have the information
+            details["contributor"] = None
+            details["currency"] = None
+            details["quantity"] = None
+            details["datetime"] = None
         return details
 
     def is_text_donation(self, text: List[str]) -> bool:
@@ -195,24 +200,6 @@ class ByStripe:
         return self.analyse_text()
 
 
-def forward(h_file: HTMLFile) -> None:
-    """forward unparsed emails"""
-    # enter these details in config.ini before running the program
-    config = ConfigParser()
-    config.read("config.ini")
-    smtp_server = config["smtp"]["server"]
-    port_no = config["smtp"]["port"]
-    sender_email = config["email"]["sender"]
-    sender_password = config["email"]["password"]
-    receiver_email = config["email"]["receiver"]
-    msg = f"{h_file.base_html}"
-    context = ssl.create_default_context()
-    server = smtplib.SMTP_SSL(smtp_server, int(port_no), context=context)
-    server.login(sender_email, sender_password)
-    server.sendmail(sender_email, receiver_email, msg.as_string())
-    server.quit()
-
-
 def connect_database():
     """establishing connection with database"""
     connection = psycopg2.connect(
@@ -279,6 +266,24 @@ def reply(data: Dict[str, str]) -> None:
     server.quit()
 
 
+def forward(h_file: HTMLFile) -> None:
+    """forward unparsed emails"""
+    # enter these details in config.ini before running the program
+    config = ConfigParser()
+    config.read("config.ini")
+    smtp_server = config["smtp"]["server"]
+    port_no = config["smtp"]["port"]
+    sender_email = config["email"]["sender"]
+    sender_password = config["email"]["password"]
+    receiver_email = config["email"]["receiver"]
+    msg = f"{h_file.base_html}"
+    context = ssl.create_default_context()
+    server = smtplib.SMTP_SSL(smtp_server, int(port_no), context=context)
+    server.login(sender_email, sender_password)
+    server.sendmail(sender_email, receiver_email, msg.as_string())
+    server.quit()
+
+
 ###Driver Code###
 h = HTMLFile(sys.argv[1])
 VENDORS = [ByPayPal, ByStripe]
@@ -296,3 +301,4 @@ if d is None:
 
 insert_record(d)
 reply(d)
+print("success")
