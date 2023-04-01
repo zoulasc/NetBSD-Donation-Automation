@@ -1,2 +1,5 @@
-# GSoC_project_2022
-This is a repository for my GSoC 2022 project with the organisation The NetBSD Foundation. Project Title: Automating donor acknowledgement and information storage & updation.
+# Google Summer of Code 2023 
+Continuing the Automation: Automating Donor Acknowledgement and Information Storage & Updating
+
+The project aims to continue and finalize the ongoing work on automating the handling of donations from PayPal and Stripe for NetBSD, ensuring an efficient and streamlined donor experience. It will be done in 350h.
+
