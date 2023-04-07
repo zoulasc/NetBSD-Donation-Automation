@@ -17,9 +17,20 @@ def get_db_connection() -> psycopg2.extensions.connection:
 
 
 SQL1 ="""
-PREPARE getfeed (text) AS
-SELECT * FROM netbsd.feedbacks f WHERE f.confirmation_no = $1;
-EXECUTE getfeed('{0}');
+PREPARE check_donation_and_feedback (text, text) AS
+WITH match AS (
+  SELECT d.email, d.confirmation_no
+  FROM netbsd.donation_details d
+  WHERE d.email = $1 AND d.confirmation_no = $2
+), feedback_exists AS (
+  SELECT 1
+  FROM netbsd.feedbacks f
+  JOIN match ON f.confirmation_no = match.confirmation_no
+)
+SELECT EXISTS (SELECT 1 FROM match) AS donation_exists, EXISTS (SELECT 1 FROM feedback_exists) AS feedback_recorded;
+
+EXECUTE check_donation_and_feedback('{1}', '{0}');
+
 
 """
 
@@ -44,13 +55,28 @@ def validate() -> str:
     cur = conn.cursor()
     
     cur.execute(SQL1.format(fid,femail))
-    identifier = cur.fetchall()
-   
+    databasequeries = cur.fetchall()
+    app.logger.info('--log: {0}'.format(databasequeries))
+
     cur.close()
     conn.close()
+
+    #checks for if donation exists
+    if not databasequeries[0][0]:
+        app.logger.info('--LOG: DONATION NOT FOUND')
+        return render_template('nodonation.html')
+
+    #checls for if feedback already exists
+    if databasequeries[0][1]:
+        app.logger.info('--LOG: FEEDBACK ALREADY RECORDED')
+        return render_template('invalid.html',identifier=fid)
+    
+    return render_template('valid.html',fid=fid,femail=femail)
+
+    """
     if not identifier:
         return render_template('valid.html',fid=fid,femail=femail)
-    return render_template('invalid.html',identifier=identifier)
+    return render_template('invalid.html',identifier=identifier)"""
 
 
 @app.route('/store/<string:fid>', methods=['POST'])
