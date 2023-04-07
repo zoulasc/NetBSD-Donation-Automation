@@ -16,16 +16,17 @@ def get_db_connection() -> psycopg2.extensions.connection:
 
 
 SQL1 ="""
-PREPARE SQL (text) AS
-SELECT * FROM netbsd.feedbacks f WHERE f.confirmation_no=$1;
-EXECUTE SQL(%s);
+PREPARE getfeed (text,text) AS
+SELECT * FROM netbsd.feedbacks f WHERE f.confirmation_no = $1 AND f.email = $2;
+EXECUTE getfeed('{0}','{1}');
+
 """
 
 
 SQL2 = """
 PREPARE SQL (text, bool, text, bool, text, bool, text) AS
 INSERT INTO netbsd.feedbacks VALUES($1, $2, $3, $4, $5, $6, $7);
-EXECUTE SQL(%s, %s, %s, %s, %s, %s, %s);
+EXECUTE SQL('{0}','{1}','{2}','{3}','{4}','{5}','{6}');
 """
 
 
@@ -37,10 +38,13 @@ def index() -> str:
 @app.route('/validate', methods=['POST'])
 def validate() -> str:
     fid=request.form['feed']
+    femail=request.form['email']
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute(SQL1,fid)       ### type error
+    
+    cur.execute(SQL1.format(fid,femail))
     identifier = cur.fetchall()
+   
     cur.close()
     conn.close()
     if not identifier:
@@ -58,8 +62,7 @@ def store(fid: str) -> str:
     notification_email=request.form["email"]
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute(SQL2,
-        (
+    cur.execute(SQL2.format(
             fid,
             answer1,
             name,
