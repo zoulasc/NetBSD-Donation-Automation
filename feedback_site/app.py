@@ -15,10 +15,11 @@ def get_db_connection() -> psycopg2.extensions.connection:
     return conn
 
 
+
 SQL1 ="""
-PREPARE getfeed (text,text) AS
-SELECT * FROM netbsd.feedbacks f WHERE f.confirmation_no = $1 AND f.email = $2;
-EXECUTE getfeed('{0}','{1}');
+PREPARE getfeed (text) AS
+SELECT * FROM netbsd.feedbacks f WHERE f.confirmation_no = $1;
+EXECUTE getfeed('{0}');
 
 """
 
@@ -48,7 +49,7 @@ def validate() -> str:
     cur.close()
     conn.close()
     if not identifier:
-        return render_template('valid.html',fid=fid)
+        return render_template('valid.html',fid=fid,femail=femail)
     return render_template('invalid.html',identifier=identifier)
 
 
@@ -56,10 +57,16 @@ def validate() -> str:
 def store(fid: str) -> str:
     answer1=request.form["answer1"]
     name=request.form["name"]
+    if not name:
+        name="Anonymous"
     answer2=request.form["answer2"]
     email=request.form["email"]
+    if not email:
+        email="Anonymous";
     answer3=request.form["answer3"]
-    notification_email=request.form["email"]
+    notification_email=request.form["notification_email"]
+    if not notification_email:
+        notification_email="Anonymous";
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(SQL2.format(
@@ -75,4 +82,4 @@ def store(fid: str) -> str:
     cur.close()
     conn.commit()
     conn.close()
-    return render_template('thank_you.html')
+    return render_template('thank_you.html', name=name)
