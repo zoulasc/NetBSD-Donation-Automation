@@ -2,10 +2,12 @@
 {% block title %}Validation{% endblock %}
 {% block content %}
 <div class='container'>
+    
     <h1 style="text-align:center;">Please Validate Your Donation Details</h1>
     <br/>
     <form  style="text-align:center;" id="myform" method="POST" action="/validate">
 	    <div class="mb-3">
+            
 		    <label for="exampleEmail" class="form-label">Email Address</label>
 		    <input type="email" class="form-control" id="email" placeholder="john@doe.com" name="email" required>
 	    </div>

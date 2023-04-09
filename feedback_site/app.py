@@ -66,7 +66,7 @@ def validate() -> str:
         app.logger.info('--LOG: DONATION NOT FOUND')
         return render_template('nodonation.html')
 
-    #checls for if feedback already exists
+    #checks for if feedback already exists
     if databasequeries[0][1]:
         app.logger.info('--LOG: FEEDBACK ALREADY RECORDED')
         return render_template('invalid.html',identifier=fid)

@@ -1,7 +1,24 @@
+
 {% extends 'base.html' %}
+{% block title %}Validation{% endblock %}
 {% block content %}
-<div class="container">
-        <p>The feedback for the passcode {{identifier}} is already recorded.</p>
-	<p><b>Thank You</b></p>
+<div class='container'>
+     <div class="alert alert-warning" role="alert">
+  The feedback for the passcode {{identifier}} is already recorded.
+</div><br>
+    <h1 style="text-align:center;">Please Validate Your Donation Details</h1>
+    <br/>
+    <form  style="text-align:center;" id="myform" method="POST" action="/validate">
+	    <div class="mb-3">
+            
+		    <label for="exampleEmail" class="form-label">Email Address</label>
+		    <input type="email" class="form-control" id="email" placeholder="john@doe.com" name="email" required>
+	    </div>
+            <div class="mb-3">
+                    <label for="feed" class="form-label">Passcode</label>
+                    <input type="text" class="form-control" id="feed" name="feed" required>
+	    </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
 </div>
 {% endblock %}
