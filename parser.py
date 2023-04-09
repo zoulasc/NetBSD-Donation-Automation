@@ -45,7 +45,7 @@ STRIPE2_TEXT = "You've just received a payment through Stripe."
 SQL = """
 PREPARE SQL (text, text, text, int, text, text, text, text) AS
 INSERT INTO netbsd.donation_details VALUES($1, $2, $3, $4, $5, $6, $7, $8);
-EXECUTE SQL(%s, %s, %s, %s, %s, %s, %s, %s);
+EXECUTE SQL('{fid}','{contributor}','{curr}','{quantity}','{email}','{vendor}','{datetime}','{amount}');
 """
 
 
@@ -218,18 +218,18 @@ def prepare_and_insert(connection, data: Dict[str, str]) -> None:
     connection.autocommit = False
     cursor = connection.cursor()
     # preparing and inserting data in the database
+    #'{fid}','{contributor}','{curr}','{quantity}','{email}','{vendor}','{datetime}','{amount}'
     cursor.execute(
-        SQL,
-        (
-            data["confirmation_no"],
-            data["contributor"],
-            data["currency"],
-            data["quantity"],
-            data["email"],
-            data["vendor"],
-            data["datetime"],
-            data["amount"],
-        ),
+        SQL.format(
+            fid=data["confirmation_no"],
+            contributor=data["contributor"],
+            curr=data["currency"],
+            quantity=data["quantity"],
+            email=data["email"],
+            vendor=data["vendor"],
+            datetime=data["datetime"],
+            amount=data["amount"]
+        )
     )
 
 
@@ -280,7 +280,7 @@ def forward(h_file: HTMLFile) -> None:
     context = ssl.create_default_context()
     server = smtplib.SMTP_SSL(smtp_server, int(port_no), context=context)
     server.login(sender_email, sender_password)
-    server.sendmail(sender_email, receiver_email, msg.as_string())
+    server.sendmail(sender_email, receiver_email, msg)
     server.quit()
 
 
