@@ -29,7 +29,7 @@ WITH match AS (
 )
 SELECT EXISTS (SELECT 1 FROM match) AS donation_exists, EXISTS (SELECT 1 FROM feedback_exists) AS feedback_recorded;
 
-EXECUTE check_donation_and_feedback('{1}', '{0}');
+EXECUTE check_donation_and_feedback('{mail}', '{fid}');
 
 
 """
@@ -38,7 +38,7 @@ EXECUTE check_donation_and_feedback('{1}', '{0}');
 SQL2 = """
 PREPARE SQL (text, bool, text, bool, text, bool, text) AS
 INSERT INTO netbsd.feedbacks VALUES($1, $2, $3, $4, $5, $6, $7);
-EXECUTE SQL('{0}','{1}','{2}','{3}','{4}','{5}','{6}');
+EXECUTE SQL('{fid}','{ans1}','{name}','{ans2}','{mail1}','{ans3}','{mail2}');
 """
 
 
@@ -54,7 +54,7 @@ def validate() -> str:
     conn = get_db_connection()
     cur = conn.cursor()
     
-    cur.execute(SQL1.format(fid,femail))
+    cur.execute(SQL1.format(fid=fid,mail=femail))
     databasequeries = cur.fetchall()
     app.logger.info('--log: {0}'.format(databasequeries))
 
@@ -96,13 +96,13 @@ def store(fid: str) -> str:
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(SQL2.format(
-            fid,
-            answer1,
-            name,
-            answer2,
-            email,
-            answer3,
-            notification_email
+            fid=fid,
+            ans1=answer1,
+            name=name,
+            ans2=answer2,
+            mail1=email,
+            ans3=answer3,
+            mail2=notification_email
             )
         )
     cur.close()
