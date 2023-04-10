@@ -1,5 +1,6 @@
 import psycopg2
 from flask import Flask, render_template, request
+import uuid
 
 app = Flask(__name__)
 
@@ -41,6 +42,17 @@ INSERT INTO netbsd.feedbacks VALUES($1, $2, $3, $4, $5, $6, $7);
 EXECUTE SQL('{fid}','{ans1}','{name}','{ans2}','{mail1}','{ans3}','{mail2}');
 """
 
+SQL3 = """
+PREPARE checkbymail (uuid) AS
+SELECT confirmation_no, email FROM netbsd.donation_details WHERE access_token = $1;
+EXECUTE checkbymail('{token}');
+"""
+
+SQL4 = """
+PREPARE check_feedback (text) AS
+SELECT EXISTS(SELECT 1 FROM netbsd.feedbacks WHERE confirmation_no = $1);
+EXECUTE check_feedback('{fid}');
+"""
 
 @app.route('/')
 def index() -> str:
@@ -73,11 +85,38 @@ def validate() -> str:
     
     return render_template('valid.html',fid=fid,femail=femail)
 
-    """
-    if not identifier:
-        return render_template('valid.html',fid=fid,femail=femail)
-    return render_template('invalid.html',identifier=identifier)"""
 
+@app.route('/feedback')
+def feedbackbymail():
+    token = request.args.get('token')
+    try:
+        uuid.UUID(token)
+    except ValueError:
+        return render_template('nodonation.html')
+    
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(SQL3.format(token=token))
+    donation = cur.fetchall()
+    app.logger.info('--log: {0}'.format(donation))
+    cur.close()
+    conn.close()
+    if not donation:
+        return render_template('nodonation.html')
+    
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(SQL4.format(fid=donation[0][0]))
+    priordonation = cur.fetchall()
+    app.logger.info('--log: {0}'.format(priordonation))
+    cur.close()
+    conn.close()
+    if priordonation[0][0]:
+        return render_template('invalid.html',identifier=donation[0][0])
+    return render_template('valid.html', fid=donation[0][0], femail=donation[0][1])
+    
 
 @app.route('/store/<string:fid>', methods=['POST'])
 def store(fid: str) -> str:
@@ -109,3 +148,4 @@ def store(fid: str) -> str:
     conn.commit()
     conn.close()
     return render_template('thank_you.html', name=name)
+

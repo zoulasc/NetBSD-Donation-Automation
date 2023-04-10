@@ -14,6 +14,7 @@ CREATE DATABASE test_database
 CREATE SCHEMA "netbsd"
   AUTHORIZATION test_user;
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE netbsd.donation_details
 (
@@ -24,8 +25,8 @@ CREATE TABLE netbsd.donation_details
   email character varying NOT NULL,
   vendor character varying NOT NULL,
   datetime character varying,
-  amount character varying NOT NULL,
-  CONSTRAINT feedback_id PRIMARY KEY (confirmation_no)
+  access_token UUID NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT donation_details_pkey PRIMARY KEY (confirmation_no)
 );
 ALTER TABLE netbsd.donation_details
   OWNER TO test_user;

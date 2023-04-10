@@ -13,3 +13,4 @@ soupsieve==2.4
 typing==3.7.4.3
 Werkzeug==2.2.3
 zope.interface==6.0
+uuid==1.3
