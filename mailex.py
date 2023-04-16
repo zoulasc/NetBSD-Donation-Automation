@@ -5,6 +5,7 @@ import string
 import psycopg2
 import uuid
 import ssl
+import os
 import smtplib
 from configparser import ConfigParser
 from datetime import datetime
@@ -18,7 +19,7 @@ def sendmail(data: Dict[str, str]):
     smtp_server = config["smtp"]["server"]
     port_no = config["smtp"]["port"]
     sender_email = config["email"]["sender"]
-    sender_password = config["email"]["password"]
+    sender_password = os.environ['PASSWORD'] #SET ENV VARIABLE OR USE CONFIG.INI config["email"]["password"]
     receiver_email = config["email"]["receiver"]
     
     if "confirmation_number" not in data:
