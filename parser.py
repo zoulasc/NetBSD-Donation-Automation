@@ -280,7 +280,8 @@ def forward(h_file: HTMLFile) -> None:
     context = ssl.create_default_context()
     server = smtplib.SMTP_SSL(smtp_server, int(port_no), context=context)
     server.login(sender_email, sender_password)
-    server.sendmail(sender_email, receiver_email, msg)
+
+    #server.sendmail(sender_email, receiver_email, msg)
     server.quit()
 
 
