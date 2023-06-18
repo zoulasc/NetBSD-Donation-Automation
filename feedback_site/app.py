@@ -36,18 +36,18 @@ def validate() -> str:
 def feedback_by_mail():
     """Handle feedback provided via email."""
     token = request.args.get("token")
-    
+
     # Check if uuid is valid
     if not valid_uuid(token):
         return render_template("nodonation.html")
 
     # Get confirmation number by uuid
     confirmation = Donation.get_by_token(token)
-    
+
     # Check if a donation exists for the given uuid
     if not confirmation:
         return render_template("nodonation.html")
-    
+
     # Check if feedback already exists for the given uuid
     if Feedback.exists_by_confirmation(confirmation):
         return render_template("invalid.html", identifier=confirmation)

@@ -1,6 +1,7 @@
 """database.py is the database layer for the feedback site."""
 from typing import Any
 import psycopg2
+import logging
 
 
 # Define connection parameters
@@ -21,7 +22,7 @@ def get_db_connection() -> psycopg2.extensions.connection:
         conn = psycopg2.connect(**DB_CONFIG)
         return conn
     except psycopg2.Error as error:
-        print(f"Error while connecting to PostgreSQL: {error}")
+        logging.warning(f"Error while connecting to PostgreSQL: {error}")
         return 0
 
 
@@ -35,7 +36,7 @@ def execute_query(query: str, *params: Any):
     """
     conn = get_db_connection()
     if conn is None:
-        print("Failed to establish database connection.")
+        logging.warning("Failed to establish database connection.")
         return []
 
     try:
@@ -56,7 +57,7 @@ def execute_query(query: str, *params: Any):
         # get rid of tuple and return
         return result[0] if result else None
     except psycopg2.Error as error:
-        print(f"Error while executing query: {error}")
+        logging.warning(f"Error while executing query: {error}")
         return []
     finally:
         # Close communication with the database

@@ -3,6 +3,7 @@ import smtplib
 import ssl
 from configparser import ConfigParser
 from typing import Optional
+import logging
 
 
 def sendmail(receiver_email: Optional[str] = None):
@@ -37,6 +38,6 @@ def sendmail(receiver_email: Optional[str] = None):
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, receiver_email, ack_text)
     except smtplib.SMTPException as error:
-        print(f"Error occurred while sending email: {error}")
+        logging.warning(f"Error occurred while sending email: {error}")
     finally:
         server.quit()
