@@ -1,9 +1,10 @@
+"""This module contains the Stripe API operations."""
 import json
-import stripe
 import logging
-from datetime import datetime
-from models import Donation
+from datetime import datetime, timezone
 from typing import Dict, List
+import stripe
+from models import Donation
 
 # Define a constant for conversion factor
 CENTS_IN_DOLLAR = 100
@@ -13,6 +14,8 @@ STATE_FILE_PATH = "./src/state-stripe.json"
 
 
 class StripeAPI:
+    """This is a class for Paypal API."""
+
     def __init__(self, api_key: str):
         # Set the API key for stripe
         stripe.api_key = api_key
@@ -32,17 +35,19 @@ class StripeAPI:
             return 0
 
     def _update_latest_donation_time(self, timestamp: int):
+        """This function compares the timestamp of the latest donation with the timestamp of the current donation and updates the latest_donation_time if the current donation is newer."""
         self.latest_donation_time = max(int(self.latest_donation_time), int(timestamp))
         with open(self.state_file, "w") as f:
             json.dump({"latest_donation_time": self.latest_donation_time}, f)
 
     def get_new_donations(self) -> List[Donation]:
         """
-        Retrieves new donations from Stripe. It raises an exception if any StripeError occurs.
+        Retrieves new donations from Stripe by Charge.search(QUERY) Checks for the any newer donations.. It raises an exception if any error occurs.
         """
         try:
             charges = stripe.Charge.search(query=f"created>{self.latest_donation_time}")
             donations = [
+                # Since Stripe does not provide customer name in charges, we use the query for to customer info.
                 self._charge_to_donation(charge, self.get_customer(charge.customer))
                 for charge in charges
             ]
@@ -58,6 +63,7 @@ class StripeAPI:
         try:
             charges = stripe.Charge.list(limit=limit)
             donations = [
+                # Since Stripe does not provide customer name in charges, we use the query for to customer info.
                 self._charge_to_donation(charge, self.get_customer(charge.customer))
                 for charge in charges
             ]
@@ -68,7 +74,7 @@ class StripeAPI:
     def get_charge(self, charge_id: str) -> Donation:
         """
         Retrieves a single charge from Stripe.
-        Not in use but we may need someday.
+        This function is not in use but stays fancy here.
         """
         try:
             charge = stripe.Charge.retrieve(charge_id)
@@ -95,12 +101,17 @@ class StripeAPI:
         """
         Converts a Stripe charge and customer into a Donation object.
         Also updates the latest_donation_time based on the charge's timestamp.
+        Uses UTC.
         """
-        donor_name = customer["name"]
-        amount = charge.amount / CENTS_IN_DOLLAR
-        currency = charge.currency
-        email = customer["email"]
-        date_time = datetime.fromtimestamp(charge.created)
+        donor_name = customer.get("name", "Unknown")
+        amount = charge.amount / CENTS_IN_DOLLAR if charge.amount else 0.0
+        currency = charge.currency if charge.currency else "Unknown"
+        email = customer.get("email", "Unknown")
+        date_time = (
+            datetime.fromtimestamp(charge.created, tz=timezone.utc)
+            if charge.created
+            else None
+        )
         vendor = "Stripe"
 
         self._update_latest_donation_time(charge.created)
