@@ -30,6 +30,15 @@ Run the Flask application:
 python app.py
 ```
 
+## Files
+app.py - main entry point to the app. checks for args.
+models - holds donation class
+donation - gets data from apis and organizes them.
+paypalapi- connections to paypal
+stripeapi- connections to stripe
+database- database connections
+mailing- mailing stuff
+utils - generates uuids and numbers
 
 ## For Database
 ```SQL
