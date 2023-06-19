@@ -31,13 +31,13 @@ python app.py
 ```
 
 ## Files
-app.py - main entry point to the app. checks for args.
-models - holds donation class
-donation - gets data from apis and organizes them.
-paypalapi- connections to paypal
-stripeapi- connections to stripe
-database- database connections
-mailing- mailing stuff
+app.py - main entry point to the app. checks for args.<br>
+models - holds donation class<br>
+donation - gets data from apis and organizes them.<br>
+paypalapi- connections to paypal<br>
+stripeapi- connections to stripe<br>
+database- database connections<br>
+mailing- mailing stuff<br>
 utils - generates uuids and numbers
 
 ## For Database
