@@ -9,36 +9,19 @@ from models import Donation
 # Define a constant for conversion factor
 CENTS_IN_DOLLAR = 100
 
-# Define a constant for the state file path
-STATE_FILE_PATH = "./src/state-stripe.json"
-
-
 class StripeAPI:
     """This is a class for Paypal API."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, last_donation_time: datetime):
         # Set the API key for stripe
         stripe.api_key = api_key
-        # Use the constant defined for the state file path
-        self.state_file = STATE_FILE_PATH
-        self.latest_donation_time = self._get_latest_donation_time()
-
-    def _get_latest_donation_time(self) -> int:
-        """
-        Returns the timestamp of the latest donation. If the state file does not exist, returns 0.
-        """
-        try:
-            with open(self.state_file, "r") as f:
-                state = json.load(f)
-                return state.get("latest_donation_time", 0)
-        except FileNotFoundError:
-            return 0
+       
+        last_donation_time = last_donation_time[:-2] + '00' + last_donation_time[-2:]
+        self.latest_donation_time = int(datetime.timestamp(datetime.strptime(last_donation_time, '%Y-%m-%d %H:%M:%S%z')))
 
     def _update_latest_donation_time(self, timestamp: int):
         """This function compares the timestamp of the latest donation with the timestamp of the current donation and updates the latest_donation_time if the current donation is newer."""
         self.latest_donation_time = max(int(self.latest_donation_time), int(timestamp))
-        with open(self.state_file, "w") as f:
-            json.dump({"latest_donation_time": self.latest_donation_time}, f)
 
     def get_new_donations(self) -> List[Donation]:
         """
@@ -46,14 +29,15 @@ class StripeAPI:
         """
         try:
             charges = stripe.Charge.search(query=f"created>{self.latest_donation_time}")
-            donations = [
+            donations = []
+            for charge in charges:
                 # Since Stripe does not provide customer name in charges, we use the query for to customer info.
-                self._charge_to_donation(charge, self.get_customer(charge.customer))
-                for charge in charges
-            ]
+                donation = self._charge_to_donation(charge, self.get_customer(charge.customer))
+                donations.append(donation)
             return donations
         except stripe.error.StripeError as e:
             logging.error(f"An error occurred while getting new donations: {str(e)}")
+            return []  # return an empty list if an error occurs
 
     def get_all_charges(self, limit: int = 10) -> List[Donation]:
         """
@@ -89,7 +73,7 @@ class StripeAPI:
         It raises an exception if any StripeError occurs.
         """
         if cus_id is None:
-            return {"name": None, "email": None}
+            return {"name": "Unknown", "email": "Unknown"}
 
         try:
             customer = stripe.Customer.retrieve(cus_id)

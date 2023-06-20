@@ -1,13 +1,17 @@
 """This file contains functions to get new donations from Stripe and Paypal APIs and organize them"""
 import stripeapi
 import paypalapi
+import database
+
+last_donations = database.get_last_donation()
 
 stripe_api = stripeapi.StripeAPI(
-    "sk_test_51NAtgCLWOZAy5SpfukpFqmUparmC3k1fZ0XURnV6o09EdmujE76eQjWtUGdhmOcrIPmVXApu3QACBps8LSy1jtXL00GBTG6CoE"
+    "sk_test_51NAtgCLWOZAy5SpfukpFqmUparmC3k1fZ0XURnV6o09EdmujE76eQjWtUGdhmOcrIPmVXApu3QACBps8LSy1jtXL00GBTG6CoE", last_donations[0][0]
 )
+
 paypal_api = paypalapi.PaypalAPI(
     "AUMGSf82bpVokGsmR59CRu3bNEppTQeCpX92tM-TYdBrRjjjFikidUtelVuhJDYAl_bySk_FpniFWmY_",
-    "EMomA8GmT2MD0UiVAyS-2PsyH8kZYGxncVbqLaCtbVaL-8jO_K7OMjb4bJ94YJT8VFWLyCcMrWZWsvjM",
+    "EMomA8GmT2MD0UiVAyS-2PsyH8kZYGxncVbqLaCtbVaL-8jO_K7OMjb4bJ94YJT8VFWLyCcMrWZWsvjM", last_donations[1][0]
 )
 
 

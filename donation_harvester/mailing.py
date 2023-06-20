@@ -34,7 +34,7 @@ def sendmail(donations):
 
     for donation in donations:
         if not validate_email(donation.email):
-            logging.warning(f"Invalid email address: {donation.email}")
+            logging.warning(f"Invalid email address: {donation.email}, skipping...")
             continue
 
         receiver_email = "ahmet@goksu.in"  # donation.email TODO !FOR TEST PURPOSES!

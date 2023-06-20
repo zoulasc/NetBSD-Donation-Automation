@@ -1,5 +1,11 @@
 """This is the entry point of the application."""
+
+
 import sys
+if len(sys.argv) <= 1:
+    print("Please specify an argument: check, all")
+    sys.exit()
+
 import mailing
 import database
 import donation
