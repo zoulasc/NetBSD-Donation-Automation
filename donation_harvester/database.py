@@ -2,7 +2,8 @@
 import logging
 import psycopg2
 
-# SQL Query to insert donation_details into the database 
+
+# SQL Query to insert donation_details into the database
 INSERT_DATABASE = """
 INSERT INTO netbsd.donation_details VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);
 """
@@ -46,7 +47,8 @@ def get_db_connection() -> psycopg2.extensions.connection:
     except psycopg2.Error as error:
         logging.warning(f"Error while connecting to PostgreSQL: {error}")
         return 0
-    
+
+
 def get_last_donation() -> list:
     """Get last donation for both Stripe and Paypal from the database."""
     conn = get_db_connection()
@@ -56,7 +58,7 @@ def get_last_donation() -> list:
         return 0
 
     conn.autocommit = True
-    
+
     try:
         # Open a cursor to perform database operations
         cur = conn.cursor()
@@ -64,9 +66,13 @@ def get_last_donation() -> list:
         # Execute the query
         cur.execute(LAST_DONATION)
         result = cur.fetchall()
-        
-        return result if result != [] else [("2020-01-01 23:59:59+03",), ("2020-01-01 23:59:59+03",)] # return a default value if no result is returned
-        
+
+        return (
+            result
+            if result != []
+            else [("2020-01-01 23:59:59+03",), ("2020-01-01 23:59:59+03",)]
+        )  # return a default value if no result is returned
+
     except psycopg2.Error as error:
         logging.warning(f"Error while executing query: {error}")
         return []
@@ -76,7 +82,6 @@ def get_last_donation() -> list:
             cur.close()
         if conn:
             conn.close()
-    
 
 
 def insert_donation(donations) -> int:

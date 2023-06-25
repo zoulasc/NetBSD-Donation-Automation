@@ -9,15 +9,20 @@ from models import Donation
 # Define a constant for conversion factor
 CENTS_IN_DOLLAR = 100
 
+
 class StripeAPI:
     """This is a class for Paypal API."""
 
     def __init__(self, api_key: str, last_donation_time: datetime):
         # Set the API key for stripe
         stripe.api_key = api_key
-       
-        last_donation_time = last_donation_time[:-2] + '00' + last_donation_time[-2:]
-        self.latest_donation_time = int(datetime.timestamp(datetime.strptime(last_donation_time, '%Y-%m-%d %H:%M:%S%z')))
+
+        last_donation_time = last_donation_time[:-2] + "00" + last_donation_time[-2:]
+        self.latest_donation_time = int(
+            datetime.timestamp(
+                datetime.strptime(last_donation_time, "%Y-%m-%d %H:%M:%S%z")
+            )
+        )
 
     def _update_latest_donation_time(self, timestamp: int):
         """This function compares the timestamp of the latest donation with the timestamp of the current donation and updates the latest_donation_time if the current donation is newer."""
@@ -32,7 +37,9 @@ class StripeAPI:
             donations = []
             for charge in charges:
                 # Since Stripe does not provide customer name in charges, we use the query for to customer info.
-                donation = self._charge_to_donation(charge, self.get_customer(charge.customer))
+                donation = self._charge_to_donation(
+                    charge, self.get_customer(charge.customer)
+                )
                 donations.append(donation)
             return donations
         except stripe.error.StripeError as e:

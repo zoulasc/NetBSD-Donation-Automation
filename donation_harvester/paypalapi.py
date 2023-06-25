@@ -10,14 +10,18 @@ from models import Donation
 
 class PaypalAPI:
     """This is a class for Paypal API."""
-    
-    def __init__(self, client_id: str, client_secret: str, last_donation_time: datetime):
+
+    def __init__(
+        self, client_id: str, client_secret: str, last_donation_time: datetime
+    ):
         # Get access token
         self.access_token = self._get_access_token(client_id, client_secret)
-
-        last_donation_time = last_donation_time[:-2] + '00' + last_donation_time[-2:]
-        self.latest_donation_time = int(datetime.timestamp(datetime.strptime(last_donation_time, '%Y-%m-%d %H:%M:%S%z')))
-        
+        last_donation_time = last_donation_time[:-2] + "00" + last_donation_time[-2:]
+        self.latest_donation_time = int(
+            datetime.timestamp(
+                datetime.strptime(last_donation_time, "%Y-%m-%d %H:%M:%S%z")
+            )
+        )
 
     def _get_access_token(self, client_id, client_secret):
         """Gets access token from Paypal API."""
@@ -31,7 +35,7 @@ class PaypalAPI:
     def _update_latest_donation_time(self, timestamp: int):
         """This function compares the timestamp of the latest donation with the timestamp of the current donation and updates the latest_donation_time if the current donation is newer."""
         self.latest_donation_time = max(int(self.latest_donation_time), int(timestamp))
-       
+
     def get_new_donations(self) -> List[Donation]:
         """
         Gets donation later than the latest_donation_time.
@@ -45,11 +49,11 @@ class PaypalAPI:
         return self.request_donations()
 
     def request_donations(
-        self, start_date: datetime=None, end_date: datetime = datetime.now()
+        self, start_date: datetime = None, end_date: datetime = datetime.now()
     ) -> List[Donation]:
         """
-            This function requests donations from Paypal API for the time between given args.
-            If args are not given, it requests donations for the last 30 days.
+        This function requests donations from Paypal API for the time between given args.
+        If args are not given, it requests donations for the last 30 days.
         """
         if start_date is None:
             start_date = end_date - timedelta(days=29)
@@ -57,13 +61,13 @@ class PaypalAPI:
         headers = {"Authorization": f"Bearer {self.access_token}"}
 
         # if difference is more than a month adjust start_date to be exactly a month before end_date
-        if (end_date - start_date).days >= 30:  
+        if (end_date - start_date).days >= 30:
             start_date = end_date - timedelta(days=29)
 
         # convert datetime object to required format
         start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.999Z")
         end_date = end_date.strftime("%Y-%m-%dT%H:%M:%S.999Z")
-        
+
         params = (
             ("fields", "payer_info"),
             ("start_date", start_date),
@@ -110,7 +114,7 @@ class PaypalAPI:
         # Get the transaction_info and payer_info from the transaction
         transaction_info = transaction["transaction_info"]
         payer_info = transaction["payer_info"]
-        
+
         # Prepare the variables to return Donation object
         donor_name = payer_info["payer_name"].get("alternate_full_name", "Unknown")
         email = payer_info.get("email_address", "Unknown")
