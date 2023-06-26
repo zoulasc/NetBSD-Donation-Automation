@@ -6,7 +6,7 @@ import database
 import donation
 
 
-def main():
+def main() -> None:
     """Menu for the application."""
     options = ["[c] Check", "[a] See All", "[e] Exit"]
     terminal_menu = TerminalMenu(options, title="Select to proceed:")
@@ -20,15 +20,15 @@ def main():
         see_all()
     elif chosen == 2:
         print("> Exit...")
-        sys.exit()
+        sys.exit(1)
 
 
-def check_last():
+def check_last() -> None:
     """Checks for new donations and sends them to database and mailing functions."""
     donations = donation.get_new_donations()
-    if len(donations) == 0:
+    if not donations:
         print("No new donations")
-        sys.exit()
+        sys.exit(1)
 
     for donation_ in donations:
         print(f"Donor Name: {donation_.donor_name}")
@@ -46,7 +46,7 @@ def check_last():
     mailing.sendmail(donations)
 
 
-def see_all():
+def see_all() -> None:
     """Shows last donations from API."""
     all_charges = donation.get_lasts()
     for donation_ in all_charges:

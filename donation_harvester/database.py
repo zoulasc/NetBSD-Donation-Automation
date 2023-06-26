@@ -1,6 +1,11 @@
-"""This module contains functions to establish connection with the database and insert donation details into the database."""
+"""
+This module contains functions to establish connection with the database
+and insert donation details into the database.
+"""
+
 import logging
 import psycopg2
+from models import Donation
 
 
 # SQL Query to insert donation_details into the database
@@ -49,7 +54,7 @@ def get_db_connection() -> psycopg2.extensions.connection:
         return 0
 
 
-def get_last_donation() -> list:
+def get_last_donation() -> list[Donation]:
     """Get last donation for both Stripe and Paypal from the database."""
     conn = get_db_connection()
 
@@ -84,7 +89,7 @@ def get_last_donation() -> list:
             conn.close()
 
 
-def insert_donation(donations) -> int:
+def insert_donation(donations: list[Donation]) -> int:
     """Insert donation details into the database."""
     conn = get_db_connection()
 
@@ -122,7 +127,7 @@ def insert_donation(donations) -> int:
         return 1
 
     except psycopg2.Error as error:
-        logging.warning(f"Error while executing query: {error}")
+        logging.exception(f"Error while executing query: {error}")
         return 0
     finally:
         # Close communication with the database
