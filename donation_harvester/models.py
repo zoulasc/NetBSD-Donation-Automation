@@ -1,13 +1,22 @@
 """This file contains the Donation class."""
 import utils
 
+from datetime import datetime
+
 
 class Donation:
     """This class represents a donation."""
 
     def __init__(
-        self, donor_name, amount, currency, email, date_time, vendor, quantity=1
-    ):
+        self,
+        donor_name: str,
+        amount: float,
+        currency: str,
+        email: str,
+        date_time: datetime,
+        vendor: str,
+        quantity: int = 1,
+    ) -> None:
         self.confirmation_number = utils.generate_confirmation_number()
         self.donor_name = donor_name
         self.currency = currency

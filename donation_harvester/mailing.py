@@ -1,12 +1,15 @@
 """This module contains functions to send emails to donors."""
+
 import smtplib
 import ssl
 import logging
+
 from configparser import ConfigParser
 from validate_email import validate_email
+from models import Donation
 
 
-def sendmail(donations):
+def sendmail(donations: list[Donation]) -> None:
     """
     This function sends an email using the SMTP server configured in config.ini.
     """
@@ -34,10 +37,14 @@ def sendmail(donations):
 
     for donation in donations:
         if not validate_email(donation.email):
-            logging.warning(f"Invalid email address: {donation.email}, skipping...")
+            logging.warning(
+                f"Invalid email address: {donation.email}, skipping..."
+            )
             continue
 
-        receiver_email = "ahmet@goksu.in"  # donation.email TODO !FOR TEST PURPOSES!
+        receiver_email = (
+            "ahmet@goksu.in"  # donation.email TODO !FOR TEST PURPOSES!
+        )
         # Create the email message
         msg = ack_text.format(
             donor_name=donation.donor_name,
