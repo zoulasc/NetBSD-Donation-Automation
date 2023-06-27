@@ -1,6 +1,6 @@
 """This is the entry point of the application."""
 import sys
-from simple_term_menu import TerminalMenu
+import logging
 import mailing
 import database
 import donation
@@ -8,19 +8,16 @@ import donation
 
 def main() -> None:
     """Menu for the application."""
-    options = ["[c] Check", "[a] See All", "[e] Exit"]
-    terminal_menu = TerminalMenu(options, title="Select to proceed:")
-    menu_entry_index = terminal_menu.show()
-    chosen = menu_entry_index
-    if chosen == 0:
-        print("> Check...")
+    n = len(sys.argv)
+    if n < 2 or n > 2:
+        exit_info()
+    command = sys.argv[1]
+    if command == "check_lasts":
         check_last()
-    elif chosen == 1:
-        print("> See All...")
+    elif command == "see_all":
         see_all()
-    elif chosen == 2:
-        print("> Exit...")
-        sys.exit(1)
+    else:
+        exit_info()
 
 
 def check_last() -> None:
@@ -60,5 +57,21 @@ def see_all() -> None:
     print("###")
 
 
+def exit_info() -> None:
+    """Shows exit information."""
+    print("Usage: python app.py <option>")
+    print("Options: check_lasts, see_all")
+    sys.exit(1)
+
+
 if __name__ == "__main__":
+    """Start application and configure logging."""
+    logging.basicConfig(
+        filename="donation_harvester.log",
+        level=logging.INFO,
+        format="%(levelname)s : %(asctime)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S%z",
+    )
+    logging.info("Running donation_harvester")
+
     main()

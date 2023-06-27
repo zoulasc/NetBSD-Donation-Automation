@@ -1,5 +1,4 @@
 psycopg2==2.9.5
 Requests==2.31.0
-simple_term_menu==1.6.1
 stripe==5.4.0
 validate_email==1.3

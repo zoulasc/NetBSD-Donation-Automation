@@ -4,6 +4,7 @@ example
 *.ini
 test*
 .env
+*log
 .flaskenv
 *.pyc
 *.pyo
