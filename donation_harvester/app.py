@@ -5,22 +5,36 @@ import mailing
 import database
 import donation
 
+"""TODO
+    *-dry-run,
+    *-update,
+    date selection,
+    paypal-only,
+    stripe-only,
+    list 5(from database, get an int and return lines as much as the given number),
+    json
+    no-email
+"""
+
 
 def main() -> None:
-    """Menu for the application."""
-    n = len(sys.argv)
-    if n < 2 or n > 2:
-        exit_info()
-    command = sys.argv[1]
-    if command == "check_lasts":
-        check_last()
-    elif command == "see_all":
-        see_all()
-    else:
+    """CLi handler for the application."""
+    global commandDict
+    commandDict = {"--update": updateDonations, "--dry-run": dryRun}
+
+    if len(sys.argv) < 2:
         exit_info()
 
+    commandline_args = sys.argv[1:]
 
-def check_last() -> None:
+    for argument in commandline_args:
+        if argument in commandDict:
+            commandDict[argument]()
+        else:
+            exit_info()
+
+
+def updateDonations() -> None:
     """Checks for new donations and sends them to database and mailing functions."""
     donations = donation.get_new_donations()
     if not donations:
@@ -43,7 +57,7 @@ def check_last() -> None:
     mailing.sendmail(donations)
 
 
-def see_all() -> None:
+def dryRun() -> None:
     """Shows last donations from API."""
     all_charges = donation.get_lasts()
     for donation_ in all_charges:
@@ -60,7 +74,10 @@ def see_all() -> None:
 def exit_info() -> None:
     """Shows exit information."""
     print("Usage: python app.py <option>")
-    print("Options: check_lasts, see_all")
+    print("Options:", end=" ")
+    for keys in commandDict.keys():
+        print(keys, end=" ")
+    print()
     sys.exit(1)
 
 
