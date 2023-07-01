@@ -1,18 +1,18 @@
 """This is the entry point of the application."""
 import argparse
-import datetime
-import json
+from datetime import datetime, timedelta
 import logging
 
-from database import get_last_donation_time, insert_donation
+from database import get_last_donation_time, get_donations_in_range, insert_donation
 from stripeapi import StripeAPI
 from paypalapi import PaypalAPI
 from mailing import sendmail
+from utils import json_output
 
 
 def main():
     """
-    Main function to orchestrate the operations.
+    Main function to orchestrate the operations regarding to arguments given.
     """
     # Set up logging
     logging.basicConfig(
@@ -53,61 +53,90 @@ def main():
         action="store_true",
         help="Only prints the actions it would take, without taking them.",
     )
+    parser.add_argument(
+        "--list", action="store_true", help="Lists the donations from the database."
+    )
+    parser.add_argument(
+        "--begin-date",
+        type=lambda s: datetime.strptime(s, "%Y-%m-%d"),
+        help="The begin date for listing donations (format: YYYY-MM-DD).",
+    )
+    parser.add_argument(
+        "--end-date",
+        type=lambda s: datetime.strptime(s, "%Y-%m-%d"),
+        help="The end date for listing donations (format: YYYY-MM-DD).",
+    )
 
     args = parser.parse_args()
     logging.info(f"Running donation_harvester with args {args}")
 
-    # If no arguments are provided, exit the program.
-    if not any(vars(args).values()):
-        logging.info("No arguments provided, program is exiting.")
-        return
-
     # Get new donations
     donations = []
 
-    if not args.stripe_only:
-        logging.info("Fetching new donations from Paypal...")
-        paypal = PaypalAPI(
-            paypal_client_id, paypal_client_secret, last_donation_time[1][0]
-        )
-        donations += paypal.get_new_donations()
+    # If runned with --update flag (continues with else --list, one of both is required)
+    if args.update:
+        # Fetch new donations from PayPal
+        if not args.stripe_only:
+            logging.info("Fetching new donations from Paypal...")
+            paypal = PaypalAPI(
+                paypal_client_id, paypal_client_secret, last_donation_time[1][0]
+            )
+            donations += paypal.get_new_donations()
 
-    if not args.paypal_only:
-        logging.info("Fetching new donations from Stripe...")
-        stripe = StripeAPI(stripe_api_key, last_donation_time[0][0])
-        donations += stripe.get_new_donations()
+        # Fetch new donations from Stripe
+        if not args.paypal_only:
+            logging.info("Fetching new donations from Stripe...")
+            stripe = StripeAPI(stripe_api_key, last_donation_time[0][0])
+            donations += stripe.get_new_donations()
 
-    if not donations:
-        logging.info("No new donations found.")
-        return
+        if not donations:
+            logging.info("No new donations found.")
+            return
+
+        # Insert new donations into the database
+        if not args.dry_run:
+            logging.info("Inserting new donations into the database...")
+            insert_donation(donations)
+        else:
+            # Dry-run
+            for donation in donations:
+                print(
+                    f"Would insert and send mail to {donation.email} for the donation"
+                    f" of {donation.currency} {donation.amount} into database"
+                )
+
+        # Send emails
+        if not args.no_email and not args.dry_run:
+            logging.info("Sending emails...")
+            sendmail(donations)
+
+    # If runned with --list flag
+    elif args.list:
+        end_date = args.end_date or datetime.now()
+        begin_date = args.begin_date or end_date - timedelta(days=29)
+
+        end_date = end_date.strftime("%Y-%m-%d")
+        begin_date = begin_date.strftime("%Y-%m-%d")
+
+        if args.stripe_only:
+            vendor = ("Stripe",)
+        elif args.paypal_only:
+            vendor = ("PayPal",)
+        else:
+            vendor = None
+
+        donations = get_donations_in_range(begin_date, end_date, vendor)
+        for donation in donations:
+            donation.print_donation()
+
+    # If runned without required arguments
+    else:
+        logging.info("No required arguments provided, program is exiting.")
 
     # Output results as a JSON file
     if args.json:
-        logging.info("JSON output created.")
-        with open("donations.json", "w") as f:
-            json.dump(
-                [donation.__dict__ for donation in donations],
-                f,
-                default=lambda x: x.isoformat()
-                if isinstance(x, datetime.datetime)
-                else x,
-            )
-
-    # Insert new donations into the database
-    if args.update and not args.dry_run:
-        logging.info("Inserting new donations into the database...")
-        insert_donation(donations)
-    elif args.update and args.dry_run:
-        for donation in donations:
-            print(
-                f"Would insert {donation.email}'s donation of"
-                f" {donation.currency} {donation.amount} into database"
-            )
-
-    # Send emails
-    if not args.no_email and not args.dry_run:
-        logging.info("Sending emails...")
-        sendmail(donations)
+        logging.info("Outputting results as a JSON file...")
+        json_output(donations)
 
 
 if __name__ == "__main__":

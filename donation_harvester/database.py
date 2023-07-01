@@ -2,7 +2,7 @@
 This module contains functions to establish connection with the database
 and insert donation details into the database.
 """
-
+import datetime
 import logging
 import psycopg2
 from models import Donation
@@ -31,6 +31,15 @@ UNION
   LIMIT 1
 );
 """
+
+# SQL Query to get donations from the database within a date range
+GET_DONATIONS_IN_RANGE = """
+SELECT *
+FROM netbsd.donation_details
+WHERE datetime BETWEEN %s AND %s AND vendor in %s
+ORDER BY datetime DESC;
+"""
+
 
 # Define connection parameters
 DB_CONFIG = {
@@ -135,3 +144,43 @@ def insert_donation(donations: list[Donation]) -> int:
             cur.close()
         if conn:
             conn.close()
+
+def get_donations_in_range(begin_date: datetime, end_date: datetime, vendor: str) -> list[Donation]:
+    """Query the database for donations within a date range."""
+    conn = get_db_connection()
+
+    if conn is None:
+        logging.warning("Failed to establish database connection.")
+        return []
+
+    conn.autocommit = True
+    donations = []
+    try:
+        cur = conn.cursor()
+        cur.execute(GET_DONATIONS_IN_RANGE, (begin_date, end_date, vendor if vendor else ('Stripe', 'PayPal')))
+        rows = cur.fetchall()
+        for row in rows:
+            donation = Donation(
+                confirmation_number=row[0],
+                donor_name=row[1],
+                currency=row[2],
+                quantity=row[3],
+                email=row[4],
+                vendor=row[5],
+                date_time=row[6],
+                amount=row[7],
+                access_token=row[8],
+            )
+            donations.append(donation)
+
+        return donations
+
+    except psycopg2.Error as error:
+        logging.exception(f"Error while executing query: {error}")
+        return []
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+            

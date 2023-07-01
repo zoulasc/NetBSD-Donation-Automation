@@ -1,5 +1,4 @@
 """This module contains the Stripe API operations."""
-import json
 import logging
 from datetime import datetime, timezone
 import stripe

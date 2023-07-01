@@ -36,7 +36,6 @@ def sendmail(donations: list[Donation]) -> None:
         server.quit()
 
     logging.info(f"Logged in to {smtp_server} successfully.")
-    
     for donation in donations:
         if not validate_email(donation.email):
             logging.warning(

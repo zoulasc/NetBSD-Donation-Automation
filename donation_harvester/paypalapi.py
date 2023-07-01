@@ -1,6 +1,4 @@
 """This module contains the Paypal API operations."""
-
-import json
 import logging
 from datetime import datetime, timedelta, timezone
 import requests

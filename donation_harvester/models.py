@@ -1,8 +1,6 @@
 """This file contains the Donation class."""
-import utils
-
 from datetime import datetime
-
+import utils
 
 class Donation:
     """This class represents a donation."""
@@ -15,9 +13,11 @@ class Donation:
         email: str,
         date_time: datetime,
         vendor: str,
-        quantity: int = 1,
+        confirmation_number = None,
+        access_token = None,
+        quantity: int = 1,  
     ) -> None:
-        self.confirmation_number = utils.generate_confirmation_number()
+        self.confirmation_number = utils.generate_confirmation_number() if not confirmation_number else confirmation_number
         self.donor_name = donor_name
         self.currency = currency
         self.quantity = quantity
@@ -25,4 +25,17 @@ class Donation:
         self.vendor = vendor
         self.date_time = date_time
         self.amount = amount
-        self.access_token = utils.generate_access_token()
+        self.access_token = utils.generate_access_token() if not access_token else access_token
+    def print_donation(self) -> None:
+        """Print donation details."""
+        print(
+            f" name: {self.donor_name}\n",
+            f"email: {self.email}\n",
+            f"amount: {self.amount}\n",
+            f"currency: {self.currency}\n",
+            f"date_time: {self.date_time}\n",
+            f"vendor: {self.vendor}\n",
+            f"confirmation_number: {self.confirmation_number}\n",
+            f"access_token: {self.access_token}\n",
+            "----------------------------------------\n"
+        )
