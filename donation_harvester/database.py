@@ -54,7 +54,7 @@ def get_db_connection() -> psycopg2.extensions.connection:
         return 0
 
 
-def get_last_donation() -> list[Donation]:
+def get_last_donation_time() -> list[Donation]:
     """Get last donation for both Stripe and Paypal from the database."""
     conn = get_db_connection()
 
@@ -119,10 +119,10 @@ def insert_donation(donations: list[Donation]) -> int:
                     donation.access_token,
                 ),
             )
-
+            logging.info(f"Successfully inserted {donation.email} into database.")
         conn.commit()
         logging.info(
-            f"Successfully inserted {donations.count} donation details into database."
+            f"Successfully inserted {len(donations)} donation details into database."
         )
         return 1
 
