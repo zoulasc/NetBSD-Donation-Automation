@@ -1,6 +1,6 @@
 """This module contains the Paypal API operations."""
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 import requests
 from requests.auth import HTTPBasicAuth
 from models import Donation
@@ -10,19 +10,12 @@ class PaypalAPI:
     """This is a class for Paypal API."""
 
     def __init__(
-        self, client_id: str, client_secret: str, last_donation_time: datetime
+        self, client_id: str, client_secret: str, last_donation_time: int
     ) -> None:
         # Get access token
         self.access_token = self._get_access_token(client_id, client_secret)
-        last_donation_time = (
-            last_donation_time[:-2] + "00" + last_donation_time[-2:]
-        )
-        self.latest_donation_time = int(
-            datetime.timestamp(
-                datetime.strptime(last_donation_time, "%Y-%m-%d %H:%M:%S%z")
-            )
-        )
-
+        self.latest_donation_time = int(last_donation_time)
+        
     def _get_access_token(self, client_id: str, client_secret: str) -> str:
         """Gets access token from Paypal API."""
         url = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
@@ -42,7 +35,7 @@ class PaypalAPI:
         the latest_donation_time if the current donation is newer.
         """
         self.latest_donation_time = max(
-            int(self.latest_donation_time), int(timestamp)
+            self.latest_donation_time, timestamp
         )
 
     def get_new_donations(self) -> list[Donation]:
@@ -50,7 +43,7 @@ class PaypalAPI:
         Gets donation later than the latest_donation_time.
         """
         return self.request_donations(
-            datetime.fromtimestamp(self.latest_donation_time)
+            self.latest_donation_time
         )
 
     def get_all_charges(self) -> list[Donation]:
@@ -60,26 +53,26 @@ class PaypalAPI:
         return self.request_donations()
 
     def request_donations(
-        self, start_date: datetime = None, end_date: datetime = datetime.now()
+        self, start_date: int = 0, end_date: int = int(datetime.now().timestamp())
     ) -> list[Donation]:
         """
         This function requests donations from Paypal API for the time between
         given args. If args are not given, it requests donations for the last
         30 days.
         """
-        if start_date is None:
-            start_date = end_date - timedelta(days=29)
+        if start_date == 0:
+            start_date = end_date - 2419200 # 1 month in seconds becuase Paypal API requires start_date to be at most 31 days before end_date
 
         headers = {"Authorization": f"Bearer {self.access_token}"}
 
         # if difference is more than a month adjust start_date to be exactly
         # a month before end_date
-        if (end_date - start_date).days >= 30:
-            start_date = end_date - timedelta(days=29)
+        if (end_date - start_date) > 2419200:
+            start_date = end_date - 2419200
 
-        # convert datetime object to required format
-        start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.999Z")
-        end_date = end_date.strftime("%Y-%m-%dT%H:%M:%S.999Z")
+        # convert datetime object to required format for API
+        start_date = datetime.fromtimestamp(start_date).strftime("%Y-%m-%dT%H:%M:%S.999Z")
+        end_date = datetime.fromtimestamp(end_date).strftime("%Y-%m-%dT%H:%M:%S.999Z")
 
         params = (
             ("fields", "payer_info"),
@@ -147,12 +140,10 @@ class PaypalAPI:
             transaction_info["transaction_initiation_date"],
             "%Y-%m-%dT%H:%M:%S%z",
         )
-        date_time = date_time.astimezone(timezone.utc)  # convert to UTC
+        date_time = int(date_time.astimezone(timezone.utc).timestamp())  # convert to UTC
         vendor = "PayPal"
-
         # Update the latest_donation_time if this transaction is newer
-        self._update_latest_donation_time(int(date_time.timestamp()))
-        int(date_time.timestamp())
+        self._update_latest_donation_time(date_time)
         return Donation(
             donor_name, amount, currency, email, date_time, vendor
         )

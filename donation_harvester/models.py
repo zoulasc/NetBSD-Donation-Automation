@@ -11,11 +11,11 @@ class Donation:
         amount: float,
         currency: str,
         email: str,
-        date_time: datetime,
+        date_time: int,
         vendor: str,
         confirmation_number = None,
         access_token = None,
-        quantity: int = 1,  
+        quantity: int = 1,
     ) -> None:
         self.confirmation_number = utils.generate_confirmation_number() if not confirmation_number else confirmation_number
         self.donor_name = donor_name
@@ -33,7 +33,7 @@ class Donation:
             f"email: {self.email}\n",
             f"amount: {self.amount}\n",
             f"currency: {self.currency}\n",
-            f"date_time: {self.date_time}\n",
+            f"date_time: {datetime.fromtimestamp(self.date_time)}\n",
             f"vendor: {self.vendor}\n",
             f"confirmation_number: {self.confirmation_number}\n",
             f"access_token: {self.access_token}\n",

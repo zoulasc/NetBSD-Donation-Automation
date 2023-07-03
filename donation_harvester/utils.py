@@ -1,6 +1,6 @@
 """This module is for random stuff."""
-import datetime
 import uuid
+import logging
 import json
 
 
@@ -17,9 +17,6 @@ def json_output(donations) -> None:
     """Output results as a JSON file"""
     with open('donations.json', 'w') as f:
         json.dump(
-            [donation.__dict__ for donation in donations],
-            f,
-            default=lambda x: x.isoformat()
-            if isinstance(x, datetime.datetime)
-            else x,
+            [donation.__dict__ for donation in donations],f
             )
+    logging.info("Successfully outputted results as a JSON file.")

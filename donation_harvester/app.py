@@ -1,6 +1,6 @@
 """This is the entry point of the application."""
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 
 from database import get_last_donation_time, get_donations_in_range, insert_donation
@@ -22,15 +22,11 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S%z",
     )
     logging.getLogger().addHandler(logging.StreamHandler())
-    logging.info(f"---RUNNING donation_harvester---")
 
     # Load credentials. TODO Use environment variables instead
     paypal_client_id = "AUMGSf82bpVokGsmR59CRu3bNEppTQeCpX92tM-TYdBrRjjjFikidUtelVuhJDYAl_bySk_FpniFWmY_"
     paypal_client_secret = "EMomA8GmT2MD0UiVAyS-2PsyH8kZYGxncVbqLaCtbVaL-8jO_K7OMjb4bJ94YJT8VFWLyCcMrWZWsvjM"
     stripe_api_key = "sk_test_51NAtgCLWOZAy5SpfukpFqmUparmC3k1fZ0XURnV6o09EdmujE76eQjWtUGdhmOcrIPmVXApu3QACBps8LSy1jtXL00GBTG6CoE"
-
-    # Fetch the last donation time from the database
-    last_donation_time = get_last_donation_time()
 
     # Parse arguments
     parser = argparse.ArgumentParser(description="Donation Update System.")
@@ -59,23 +55,24 @@ def main():
     )
     parser.add_argument(
         "--begin-date",
-        type=lambda s: datetime.strptime(s, "%Y-%m-%d"),
+        type=lambda s: int(datetime.strptime(s, "%Y-%m-%d").timestamp()),
         help="The begin date for listing donations (format: YYYY-MM-DD).",
     )
     parser.add_argument(
         "--end-date",
-        type=lambda s: datetime.strptime(s, "%Y-%m-%d"),
+        type=lambda s: int(datetime.strptime(s, "%Y-%m-%d").timestamp()),
         help="The end date for listing donations (format: YYYY-MM-DD).",
     )
-
     args = parser.parse_args()
-    logging.info(f"args: {args}")
+    logging.info(f"---RUNNING donation_harvester--- \n args: {args}")
 
     # Get new donations
     donations = []
 
     # If runned with --update flag (continues with else --list, one of both is required)
     if args.update:
+        # Fetch the last donation time from the database
+        last_donation_time = get_last_donation_time()
         # Fetch new donations from PayPal
         if not args.stripe_only:
             logging.info("Fetching new donations from Paypal...")
@@ -113,11 +110,8 @@ def main():
 
     # If runned with --list flag
     elif args.list:
-        end_date = args.end_date or datetime.now()
-        begin_date = args.begin_date or end_date - timedelta(days=29)
-
-        end_date = end_date.strftime("%Y-%m-%d")
-        begin_date = begin_date.strftime("%Y-%m-%d")
+        end_date = args.end_date or int(datetime.now().timestamp()) # get current timestamp if not provided
+        begin_date = args.begin_date or (end_date - 2419200) # get timestamp from 1 month ago if not provided
 
         if args.stripe_only:
             vendor = ("Stripe",)
@@ -136,7 +130,6 @@ def main():
 
     # Output results as a JSON file
     if args.json:
-        logging.info("Outputting results as a JSON file...")
         json_output(donations)
 
 

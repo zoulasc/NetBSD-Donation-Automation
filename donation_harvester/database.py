@@ -2,7 +2,6 @@
 This module contains functions to establish connection with the database
 and insert donation details into the database.
 """
-import datetime
 import logging
 import psycopg2
 from models import Donation
@@ -81,9 +80,8 @@ def get_last_donation_time() -> list[Donation]:
         # Execute the query
         cur.execute(LAST_DONATION)
         result = cur.fetchall()
-        
         if result == []:
-            result = [("2020-01-01 23:59:59+03",), ("2020-01-01 23:59:59+03",)]
+            result = [(1600000000,), (1600000000,)]
             logging.warning(f"No data to fetch, default last donation time is {result}")
         logging.info(f"Successfully fetched last donation time from database: {result}")
         return result  # return a default value if no result is returned
@@ -146,7 +144,7 @@ def insert_donation(donations: list[Donation]) -> int:
         if conn:
             conn.close()
 
-def get_donations_in_range(begin_date: datetime, end_date: datetime, vendor: str) -> list[Donation]:
+def get_donations_in_range(begin_date: int, end_date: int, vendor: str) -> list[Donation]:
     """Query the database for donations within a date range."""
     conn = get_db_connection()
 
@@ -173,7 +171,7 @@ def get_donations_in_range(begin_date: datetime, end_date: datetime, vendor: str
                 access_token=row[8],
             )
             donations.append(donation)
-            logging.info(f"Successfully fetched {len(donations)} donations from database.")
+        logging.info(f"Successfully fetched {len(donations)} donations from database.")
         return donations
 
     except psycopg2.Error as error:
