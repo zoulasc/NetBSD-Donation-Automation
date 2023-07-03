@@ -33,7 +33,7 @@ class Donation:
             f"email: {self.email}\n",
             f"amount: {self.amount}\n",
             f"currency: {self.currency}\n",
-            f"date_time: {datetime.fromtimestamp(self.date_time)}\n",
+            f"date_time: {datetime.fromtimestamp(self.date_time)}\n", # prints in readable format
             f"vendor: {self.vendor}\n",
             f"confirmation_number: {self.confirmation_number}\n",
             f"access_token: {self.access_token}\n",

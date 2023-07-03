@@ -13,10 +13,10 @@ def generate_access_token() -> str:
     """Generate a random UUID"""
     return str(uuid.uuid4())
 
-def json_output(donations) -> None:
+def json_output(donations, filename='donations.json') -> None:
     """Output results as a JSON file"""
-    with open('donations.json', 'w') as f:
+    with open(filename, 'w') as f:
         json.dump(
             [donation.__dict__ for donation in donations],f
             )
-    logging.info("Successfully outputted results as a JSON file.")
+    logging.info(f"Successfully outputted results as {filename}")

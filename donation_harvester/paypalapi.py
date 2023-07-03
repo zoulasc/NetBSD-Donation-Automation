@@ -1,42 +1,36 @@
 """This module contains the Paypal API operations."""
+import base64
 import logging
 from datetime import datetime, timezone
 import requests
-from requests.auth import HTTPBasicAuth
 from models import Donation
 
+PAYPAL_TOKEN_URL = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
+PAYPAL_TRANSACTION_URL = "https://api-m.sandbox.paypal.com/v1/reporting/transactions"
 
 class PaypalAPI:
     """This is a class for Paypal API."""
-
     def __init__(
         self, client_id: str, client_secret: str, last_donation_time: int
     ) -> None:
         # Get access token
         self.access_token = self._get_access_token(client_id, client_secret)
         self.latest_donation_time = int(last_donation_time)
-        
+
     def _get_access_token(self, client_id: str, client_secret: str) -> str:
         """Gets access token from Paypal API."""
-        url = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
+        url = PAYPAL_TOKEN_URL
         payload = "grant_type=client_credentials"
-        r = requests.post(
-            url,
-            auth=HTTPBasicAuth(client_id, client_secret),
-            data=payload,
-            timeout=10,
-        )
+        headers = {
+            'Authorization': 'Basic ' + base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+        }
+        try:
+            r = requests.post(url, headers=headers, data=payload, timeout=10)
+            r.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Request to PayPal API Auth failed: {e}")
+            return []
         return r.json()["access_token"]
-
-    def _update_latest_donation_time(self, timestamp: int):
-        """
-        This function compares the timestamp of the latest donation with
-        the timestamp of the current donation and updates
-        the latest_donation_time if the current donation is newer.
-        """
-        self.latest_donation_time = max(
-            self.latest_donation_time, timestamp
-        )
 
     def get_new_donations(self) -> list[Donation]:
         """
@@ -45,12 +39,6 @@ class PaypalAPI:
         return self.request_donations(
             self.latest_donation_time
         )
-
-    def get_all_charges(self) -> list[Donation]:
-        """
-        Gets all charges in 1 month
-        """
-        return self.request_donations()
 
     def request_donations(
         self, start_date: int = 0, end_date: int = int(datetime.now().timestamp())
@@ -63,8 +51,6 @@ class PaypalAPI:
         if start_date == 0:
             start_date = end_date - 2419200 # 1 month in seconds becuase Paypal API requires start_date to be at most 31 days before end_date
 
-        headers = {"Authorization": f"Bearer {self.access_token}"}
-
         # if difference is more than a month adjust start_date to be exactly
         # a month before end_date
         if (end_date - start_date) > 2419200:
@@ -74,20 +60,27 @@ class PaypalAPI:
         start_date = datetime.fromtimestamp(start_date).strftime("%Y-%m-%dT%H:%M:%S.999Z")
         end_date = datetime.fromtimestamp(end_date).strftime("%Y-%m-%dT%H:%M:%S.999Z")
 
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+
         params = (
             ("fields", "payer_info"),
             ("start_date", start_date),
             ("end_date", end_date),
         )
 
-        response = requests.get(
-            "https://api-m.sandbox.paypal.com/v1/reporting/transactions",
-            headers=headers,
-            params=params,
-            timeout=10,
-        )
+        try:
+            r = requests.get(
+                PAYPAL_TRANSACTION_URL,
+                headers=headers,
+                params=params,
+                timeout=10,
+            )
+            r.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Request to PayPal API failed: {e}")
+            return []
 
-        response_json = response.json()
+        response_json = r.json()
 
         # Check if the request was successful
         if (
@@ -116,8 +109,6 @@ class PaypalAPI:
     def _transaction_to_donation(self, transaction: dict[str, str]) -> Donation:
         """
         Converts a PayPal transaction into a Donation object.
-        Also updates the latest_donation_time based on the transaction's
-        timestamp.
         Uses UTC.
         """
 
@@ -142,8 +133,6 @@ class PaypalAPI:
         )
         date_time = int(date_time.astimezone(timezone.utc).timestamp())  # convert to UTC
         vendor = "PayPal"
-        # Update the latest_donation_time if this transaction is newer
-        self._update_latest_donation_time(date_time)
         return Donation(
             donor_name, amount, currency, email, date_time, vendor
         )

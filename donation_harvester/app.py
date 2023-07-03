@@ -37,8 +37,9 @@ def main():
         "--stripe-only", action="store_true", help="Fetches data only from Stripe."
     )
     parser.add_argument(
-        "--json", action="store_true", help="Outputs the results as a JSON file."
-    )
+    "--json", nargs='?', const='donations.json', default=False, 
+    help="Outputs the results as a JSON file. You can optionally specify the output file name."
+)
     parser.add_argument(
         "--no-email", action="store_true", help="Disables email sending."
     )
@@ -130,7 +131,7 @@ def main():
 
     # Output results as a JSON file
     if args.json:
-        json_output(donations)
+        json_output(donations, args.json)
 
 
 if __name__ == "__main__":
