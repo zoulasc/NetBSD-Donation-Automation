@@ -117,7 +117,7 @@ class PaypalAPI:
         for transaction in transactions:
             donation = self._transaction_to_donation(transaction)
             donations.append(donation)
-
+        logging.info(f"PayPal - fetched {len(donations)} donations between {start_date} and {end_date}")
         return donations
 
     def _transaction_to_donation(self, transaction: dict[str, str]) -> Donation:

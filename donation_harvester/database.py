@@ -57,6 +57,7 @@ def get_db_connection() -> psycopg2.extensions.connection:
     """
     try:
         conn = psycopg2.connect(**DB_CONFIG)
+        logging.info("Connected to database.")
         return conn
     except psycopg2.Error as error:
         logging.warning(f"Error while connecting to PostgreSQL: {error}")
@@ -80,12 +81,12 @@ def get_last_donation_time() -> list[Donation]:
         # Execute the query
         cur.execute(LAST_DONATION)
         result = cur.fetchall()
-
-        return (
-            result
-            if result != []
-            else [("2020-01-01 23:59:59+03",), ("2020-01-01 23:59:59+03",)]
-        )  # return a default value if no result is returned
+        
+        if result == []:
+            result = [("2020-01-01 23:59:59+03",), ("2020-01-01 23:59:59+03",)]
+            logging.warning(f"No data to fetch, default last donation time is {result}")
+        logging.info(f"Successfully fetched last donation time from database: {result}")
+        return result  # return a default value if no result is returned
 
     except psycopg2.Error as error:
         logging.warning(f"Error while executing query: {error}")
@@ -128,7 +129,7 @@ def insert_donation(donations: list[Donation]) -> int:
                     donation.access_token,
                 ),
             )
-            logging.info(f"Successfully inserted {donation.email} into database.")
+            logging.info(f"Successfully inserted {donation.confirmation_number} | {donation.email} from {donation.vendor} into database.")
         conn.commit()
         logging.info(
             f"Successfully inserted {len(donations)} donation details into database."
@@ -172,7 +173,7 @@ def get_donations_in_range(begin_date: datetime, end_date: datetime, vendor: str
                 access_token=row[8],
             )
             donations.append(donation)
-
+            logging.info(f"Successfully fetched {len(donations)} donations from database.")
         return donations
 
     except psycopg2.Error as error:

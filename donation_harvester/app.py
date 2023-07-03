@@ -22,6 +22,7 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S%z",
     )
     logging.getLogger().addHandler(logging.StreamHandler())
+    logging.info(f"---RUNNING donation_harvester---")
 
     # Load credentials. TODO Use environment variables instead
     paypal_client_id = "AUMGSf82bpVokGsmR59CRu3bNEppTQeCpX92tM-TYdBrRjjjFikidUtelVuhJDYAl_bySk_FpniFWmY_"
@@ -68,7 +69,7 @@ def main():
     )
 
     args = parser.parse_args()
-    logging.info(f"Running donation_harvester with args {args}")
+    logging.info(f"args: {args}")
 
     # Get new donations
     donations = []
