@@ -37,5 +37,5 @@ class Donation:
             f"vendor: {self.vendor}\n",
             f"confirmation_number: {self.confirmation_number}\n",
             f"access_token: {self.access_token}\n",
-            "----------------------------------------\n"
+            "----------------------------------------"
         )

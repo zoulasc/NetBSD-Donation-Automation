@@ -15,8 +15,9 @@ class PaypalAPI:
     ) -> None:
         # Get access token
         self.access_token = self._get_access_token(client_id, client_secret)
-        self.latest_donation_time = int(last_donation_time)
-
+        # Set latest_donation_time to last_donation_time + 1 sec to avoid getting the same donation twice
+        self.latest_donation_time = int(last_donation_time) + 1
+        
     def _get_access_token(self, client_id: str, client_secret: str) -> str:
         """Gets access token from Paypal API."""
         url = PAYPAL_TOKEN_URL
@@ -57,8 +58,8 @@ class PaypalAPI:
             start_date = end_date - 2419200
 
         # convert datetime object to required format for API
-        start_date = datetime.fromtimestamp(start_date).strftime("%Y-%m-%dT%H:%M:%S.999Z")
-        end_date = datetime.fromtimestamp(end_date).strftime("%Y-%m-%dT%H:%M:%S.999Z")
+        start_date = datetime.fromtimestamp(start_date, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        end_date = datetime.fromtimestamp(end_date, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
         headers = {"Authorization": f"Bearer {self.access_token}"}
 
@@ -127,11 +128,11 @@ class PaypalAPI:
         currency = transaction_info["transaction_amount"].get(
             "currency_code", "Unknown"
         )
-        date_time = datetime.strptime(
+        date_time = int(datetime.strptime(
             transaction_info["transaction_initiation_date"],
-            "%Y-%m-%dT%H:%M:%S%z",
-        )
-        date_time = int(date_time.astimezone(timezone.utc).timestamp())  # convert to UTC
+            "%Y-%m-%dT%H:%M:%S%z"
+        ).replace(tzinfo=timezone.utc).timestamp())
+    
         vendor = "PayPal"
         return Donation(
             donor_name, amount, currency, email, date_time, vendor

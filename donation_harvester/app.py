@@ -100,9 +100,9 @@ def main():
             # Dry-run
             for donation in donations:
                 print(
-                    f"Would insert and send mail to {donation.email} for the donation"
-                    f" of {donation.currency} {donation.amount} into database"
+                    f"Would insert and send mail to {donation.email} for the donation in {donation.date_time}"
                 )
+            print(f"Would insert {len(donations)} donations in total.")
 
         # Send emails
         if not args.no_email and not args.dry_run:
