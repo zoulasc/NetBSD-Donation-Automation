@@ -4,6 +4,9 @@ import ssl
 from configparser import ConfigParser
 from typing import Optional
 import logging
+from validate_email import validate_email
+
+
 
 
 def sendmail(receiver_email: Optional[str] = None):
@@ -20,12 +23,13 @@ def sendmail(receiver_email: Optional[str] = None):
     port_no = config["smtp"]["port"]
     sender_email = config["email"]["sender"]
 
-    # Get sender password from environment variable
+    # Get sender password from environment variable TODO
     sender_password = config["email"]["password"]  # os.environ.get("PASSWORD")
 
-    # If receiver_email argument is not provided, use the one from config.ini
-    if receiver_email is None:
+    # If receiver_email argument is not valid, use the one from config.ini
+    if not validate_email(receiver_email):
         receiver_email = config["email"]["receiver"]
+        logging.info(f"Invalid Mail: {receiver_email}")
 
     ack_text = config["msg"]["text"]
 
@@ -37,6 +41,7 @@ def sendmail(receiver_email: Optional[str] = None):
         server = smtplib.SMTP_SSL(smtp_server, int(port_no), context=context)
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, receiver_email, ack_text)
+        logging.info(f"Ack mail sent to: {receiver_email}")
     except smtplib.SMTPException as error:
         logging.warning(f"Error occurred while sending email: {error}")
     finally:
