@@ -22,7 +22,7 @@ def sendmail(donations: list[Donation]) -> None:
     port_no = config["smtp"]["port"]
     sender_email = config["email"]["sender"]
 
-    # Get sender password from environment variable
+    # Get sender password from environment variable TODO
     sender_password = config["email"]["password"]
     ack_text = config["msg"]["text"]
     context = ssl.create_default_context()

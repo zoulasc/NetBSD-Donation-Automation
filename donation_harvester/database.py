@@ -82,8 +82,9 @@ def get_last_donation_time() -> list[Donation]:
         result = cur.fetchall()
         if result == []:
             result = [(1600000000,), (1600000000,)]
-            logging.warning(f"No data to fetch, default last donation time is {result}")
-        logging.info(f"Successfully fetched last donation time from database: {result}")
+            logging.warning(f"No time data to fetch, default last donation time is {result}")
+        else:
+            logging.info(f"Successfully fetched last donation time from database: {result}")
         return result  # return a default value if no result is returned
 
     except psycopg2.Error as error:
