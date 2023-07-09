@@ -5,18 +5,19 @@ and insert donation details into the database.
 import logging
 import psycopg2
 from models import Donation
+from dbconfig import (get_db_connection, PREFIX)
 
 
 # SQL Query to insert donation_details into the database
-INSERT_DATABASE = """
-INSERT INTO donations.information VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);
+INSERT_DATABASE = f"""
+INSERT INTO {PREFIX}.information VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);
 """
 
-# SQL Query to get the last inserted donation_details from the database
-LAST_DONATION = """
+# SQL Query to get the last inserted donation details from the database
+LAST_DONATION = f"""
 (
   SELECT datetime
-  FROM donations.information
+  FROM {PREFIX}.information
   WHERE vendor = 'PayPal'
   ORDER BY datetime DESC
   LIMIT 1
@@ -24,7 +25,7 @@ LAST_DONATION = """
 UNION
 (
   SELECT datetime
-  FROM donations.information
+  FROM {PREFIX}.information
   WHERE vendor = 'Stripe'
   ORDER BY datetime DESC
   LIMIT 1
@@ -32,54 +33,31 @@ UNION
 """
 
 # SQL Query to get donations from the database within a date range
-GET_DONATIONS_IN_RANGE = """
+GET_DONATIONS_IN_RANGE = f"""
 SELECT *
-FROM donations.information
+FROM {PREFIX}.information
 WHERE datetime BETWEEN %s AND %s AND vendor in %s
 ORDER BY datetime DESC;
 """
 
 # Insert deferred email into database
-INSERT_DEFERRED_MAIL = """
-INSERT INTO donations.deferred_email VALUES(%s);
+INSERT_DEFERRED_MAIL = f"""
+INSERT INTO {PREFIX}.deferred_email VALUES(%s);
 """
 
 # Get deferred emails from database
-GET_DEFERRED_MAIL = """
+GET_DEFERRED_MAIL = f"""
 SELECT * 
-FROM donations.information 
+FROM {PREFIX}.information 
 WHERE confirmation_no IN (
-    SELECT confirmation_no FROM donations.deferred_email
+    SELECT confirmation_no FROM {PREFIX}.deferred_email
 );
 """
 
 # Delete deferred emails from database
-DELETE_DEFERRED_EMAIL = """
-DELETE FROM donations.deferred_email
+DELETE_DEFERRED_EMAIL = f"""
+DELETE FROM {PREFIX}.deferred_email
 """
-
-
-# Define connection parameters
-DB_CONFIG = {
-    "database": "donations_data",
-    "user": "donations_user",
-    "password": "test@123",
-    "host": "127.0.0.1",
-    "port": "5432",
-}
-
-
-def get_db_connection() -> psycopg2.extensions.connection:
-    """
-    Establish and return a connection with the database.
-    """
-    try:
-        conn = psycopg2.connect(**DB_CONFIG)
-        logging.info("Connected to database.")
-        return conn
-    except psycopg2.Error as error:
-        logging.warning(f"Error while connecting to PostgreSQL: {error}")
-        return None
 
 
 def get_last_donation_time() -> list[Donation]:
