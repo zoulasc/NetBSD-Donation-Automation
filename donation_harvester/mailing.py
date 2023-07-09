@@ -19,21 +19,31 @@ def sendmail(donations: list[Donation]) -> None:
     config.read("config.ini", encoding="utf-8")
 
     smtp_server = config["smtp"]["server"]
-    port_no = config["smtp"]["port"]
-    sender_email = config["email"]["sender"]
+    port_no = int(config["smtp"]["port"])
+    smtp_login = config["smtp"]["login"]
+    smtp_password = config["smtp"]["password"]
 
-    # Get sender password from environment variable TODO
-    sender_password = config["email"]["password"]
+    # Get sender credentials from environment variable
+    sender_email = config["email"]["sender"]
+    debug_receiver_email = config["email"]["receiver"]
     ack_text = config["msg"]["text"]
-    context = ssl.create_default_context()
 
     # Try to login to server
     try:
-        server = smtplib.SMTP_SSL(smtp_server, int(port_no), context=context)
-        server.login(sender_email, sender_password)
+        if port_no == 25:
+            server = smtplib.SMTP(smtp_server, port_no)
+        else:
+            context = ssl.create_default_context()
+            server = smtplib.SMTP_SSL(smtp_server, port_no, context=context)
+            server.login(smtp_login, smtp_password)
     except smtplib.SMTPException as error:
         logging.warning(f"Error occurred while sending email: {error}")
         server.quit()
+        # XXX: here we should return an error
+        # We should have a way to re-process donations that we
+        # could not send mail to. Perhaps add a field in the database
+        # indicating that we sent email successfully after we send mail?
+        return
 
     logging.info(f"Logged in to {smtp_server} successfully.")
     for donation in donations:
@@ -43,9 +53,10 @@ def sendmail(donations: list[Donation]) -> None:
             )
             continue
 
-        receiver_email = (
-            "ahmet@goksu.in"  # donation.email TODO !FOR TEST PURPOSES!
-        )
+        if debug_receiver_email == "":
+            receiver_email = donation.email
+        else:
+            receiver_email = debug_receiver_email
         # Create the email message
         msg = ack_text.format(
             donor_name=donation.donor_name,
