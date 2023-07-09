@@ -6,8 +6,8 @@ import psycopg2
 
 # Define connection parameters
 DB_CONFIG = {
-    "database": "test_database",
-    "user": "test_user",
+    "database": "donations_data",
+    "user": "donations_user",
     "password": "test@123",
     "host": "127.0.0.1",
     "port": "5432",

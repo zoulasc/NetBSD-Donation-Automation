@@ -29,7 +29,7 @@ def index() -> str:
 @app.route("/validate", methods=["POST"])
 def validate() -> str:
     """Validate the provided feedback ID and email."""
-    feedback_id = request.form.get("feed")
+    feedback_id = int(request.form.get("feed"))
     email = request.form.get("email")
 
     # Check if a donation exists for the given email and feedback ID
@@ -75,7 +75,7 @@ def feedback_by_mail():
 def store(feedback_id: str) -> str:
     """Store feedback responses and handle optional notification email."""
     feedback_responses = {
-        "confirmation_no": feedback_id,
+        "confirmation_no": int(feedback_id),
         "name_question": request.form.get("answer1"),
         "name": request.form.get("name", "Anonymous"),
         "email_question": request.form.get("answer2"),

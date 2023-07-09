@@ -9,14 +9,14 @@ from models import Donation
 
 # SQL Query to insert donation_details into the database
 INSERT_DATABASE = """
-INSERT INTO netbsd.donation_details VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);
+INSERT INTO donations.information VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);
 """
 
 # SQL Query to get the last inserted donation_details from the database
 LAST_DONATION = """
 (
   SELECT datetime
-  FROM netbsd.donation_details
+  FROM donations.information
   WHERE vendor = 'PayPal'
   ORDER BY datetime DESC
   LIMIT 1
@@ -24,7 +24,7 @@ LAST_DONATION = """
 UNION
 (
   SELECT datetime
-  FROM netbsd.donation_details
+  FROM donations.information
   WHERE vendor = 'Stripe'
   ORDER BY datetime DESC
   LIMIT 1
@@ -34,7 +34,7 @@ UNION
 # SQL Query to get donations from the database within a date range
 GET_DONATIONS_IN_RANGE = """
 SELECT *
-FROM netbsd.donation_details
+FROM donations.information
 WHERE datetime BETWEEN %s AND %s AND vendor in %s
 ORDER BY datetime DESC;
 """
@@ -42,8 +42,8 @@ ORDER BY datetime DESC;
 
 # Define connection parameters
 DB_CONFIG = {
-    "database": "test_database",
-    "user": "test_user",
+    "database": "donations_data",
+    "user": "donations_user",
     "password": "test@123",
     "host": "127.0.0.1",
     "port": "5432",
@@ -60,7 +60,7 @@ def get_db_connection() -> psycopg2.extensions.connection:
         return conn
     except psycopg2.Error as error:
         logging.warning(f"Error while connecting to PostgreSQL: {error}")
-        return 0
+        return None
 
 
 def get_last_donation_time() -> list[Donation]:

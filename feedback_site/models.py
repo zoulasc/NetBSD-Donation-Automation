@@ -10,17 +10,17 @@ class Donation:
     PREPARE check_donation (text, int) AS
     SELECT EXISTS (
       SELECT 1
-      FROM netbsd.donation_details d
+      FROM donations.information d
       WHERE d.email = $1 AND d.confirmation_no = $2
     );
     EXECUTE check_donation(%s, %s);
     """
 
     SQL_GET_BY_TOKEN = """
-    PREPARE get_donation_by_token (uuid) AS
+    PREPARE get_donation_by_token (text) AS
     SELECT confirmation_no
-    FROM netbsd.donation_details
-    WHERE access_token = $1;
+    FROM donations.information
+    WHERE uuid = $1;
     EXECUTE get_donation_by_token(%s);
     """
 
@@ -45,14 +45,14 @@ class Feedback:
     """The Feedback class represents a feedback in the database."""
 
     SQL_CHECK_EXISTS_BY_CONFIRMATION = """
-    PREPARE check_feedback (text) AS
-    SELECT EXISTS(SELECT 1 FROM netbsd.feedbacks WHERE confirmation_no = $1);
+    PREPARE check_feedback (int) AS
+    SELECT EXISTS(SELECT 1 FROM donations.interaction WHERE confirmation_no = $1);
     EXECUTE check_feedback(%s);
     """
 
     SQL_INSERT_FEEDBACK = """
     PREPARE insert_feedback (int, bool, text, bool, text, bool, text) AS
-    INSERT INTO netbsd.feedbacks VALUES($1, $2, $3, $4, $5, $6, $7);
+    INSERT INTO donations.interaction VALUES($1, $2, $3, $4, $5, $6, $7);
     EXECUTE insert_feedback(%s, %s, %s, %s, %s, %s, %s);
     """
 
