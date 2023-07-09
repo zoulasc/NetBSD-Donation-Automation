@@ -3,7 +3,7 @@ import argparse
 from datetime import datetime
 import logging
 
-from database import get_last_donation_time, get_donations_in_range, insert_donation
+from database import get_last_donation_time, get_donations_in_range, insert_donation, get_deferred_emails, delete_deferred_emails
 from stripeapi import StripeAPI
 from paypalapi import PaypalAPI
 from mailing import sendmail
@@ -53,6 +53,9 @@ def main():
     )
     parser.add_argument(
         "--list", action="store_true", help="Lists the donations from the database."
+    )
+    parser.add_argument(
+        "--send-deferred-emails", action="store_true", help="Send deferred emails."
     )
     parser.add_argument(
         "--begin-date",
@@ -132,6 +135,17 @@ def main():
     # Output results as a JSON file
     if args.json:
         json_output(donations, args.json)
+        
+    if args.send_deferred_emails:
+        logging.info("Checking for deferred emails...")
+        donations = get_deferred_emails()
+        if not donations:
+            logging.info("No deferred emails found.")
+        else:
+            print(f"Are you sure you want to send {len(donations)} deferred emails? (y/n)")
+            if input() == "y":
+                delete_deferred_emails()
+                sendmail(donations)
 
 
 if __name__ == "__main__":

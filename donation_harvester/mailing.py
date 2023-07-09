@@ -5,6 +5,7 @@ import ssl
 import logging
 
 from configparser import ConfigParser
+from database import insert_deferred_email
 from validate_email import validate_email
 from models import Donation
 
@@ -36,13 +37,12 @@ def sendmail(donations: list[Donation]) -> None:
             context = ssl.create_default_context()
             server = smtplib.SMTP_SSL(smtp_server, port_no, context=context)
             server.login(smtp_login, smtp_password)
-    except smtplib.SMTPException as error:
+    except (smtplib.SMTPException, OSError) as error:
         logging.warning(f"Error occurred while sending email: {error}")
-        server.quit()
-        # XXX: here we should return an error
-        # We should have a way to re-process donations that we
-        # could not send mail to. Perhaps add a field in the database
-        # indicating that we sent email successfully after we send mail?
+        
+        # Insert deferred emails into database to send them later
+        insert_deferred_email(donations)
+    
         return
 
     logging.info(f"Logged in to {smtp_server} successfully.")
@@ -65,6 +65,7 @@ def sendmail(donations: list[Donation]) -> None:
             confirmation_number=donation.confirmation_number,
             access_token=donation.access_token,
         )
+        
         try:
             server.sendmail(sender_email, receiver_email, msg)
             logging.info(f"mail sent to {donation.email}")
