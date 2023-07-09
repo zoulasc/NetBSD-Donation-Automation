@@ -202,7 +202,7 @@ def get_donations_in_range(begin_date: int, end_date: int, vendor: str) -> list[
             cur.close()
         if conn:
             conn.close()
-            
+
 def insert_deferred_email(donations: list[Donation]) -> int:
     """Insert deferred emails into the database."""
     conn = get_db_connection()
@@ -240,7 +240,7 @@ def insert_deferred_email(donations: list[Donation]) -> int:
             cur.close()
         if conn:
             conn.close()
-            
+
 def get_deferred_emails() -> list[Donation]:
     """Query the database for deferred emails."""
     conn = get_db_connection()
@@ -279,7 +279,7 @@ def get_deferred_emails() -> list[Donation]:
             cur.close()
         if conn:
             conn.close()
-            
+
 def delete_deferred_emails() -> None:
     """Delete the database for deferred emails."""
     conn = get_db_connection()
@@ -292,7 +292,7 @@ def delete_deferred_emails() -> None:
     try:
         cur = conn.cursor()
         cur.execute(DELETE_DEFERRED_EMAIL)
-        logging.info(f"Successfully deleted deferred emails from database.")
+        logging.info("Successfully deleted deferred emails from database.")
         return None
 
     except psycopg2.Error as error:
@@ -303,3 +303,4 @@ def delete_deferred_emails() -> None:
             cur.close()
         if conn:
             conn.close()
+            

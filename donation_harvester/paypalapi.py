@@ -17,7 +17,7 @@ class PaypalAPI:
         self.access_token = self._get_access_token(client_id, client_secret)
         # Set latest_donation_time to last_donation_time + 1 sec to avoid getting the same donation twice
         self.latest_donation_time = int(last_donation_time) + 1
-        
+
     def _get_access_token(self, client_id: str, client_secret: str) -> str:
         """Gets access token from Paypal API."""
         url = PAYPAL_TOKEN_URL
@@ -132,7 +132,7 @@ class PaypalAPI:
             transaction_info["transaction_initiation_date"],
             "%Y-%m-%dT%H:%M:%S%z"
         ).replace(tzinfo=timezone.utc).timestamp())
-    
+
         vendor = "PayPal"
         return Donation(
             donor_name, amount, currency, email, date_time, vendor
