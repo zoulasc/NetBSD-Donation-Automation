@@ -14,7 +14,7 @@ class StripeAPI:
         # Set the API key for stripe
         stripe.api_key = api_key
 
-        self.latest_donation_time = last_donation_time
+        self.latest_donation_time = last_donation_time + 1
 
     def get_new_donations(self) -> list[Donation]:
         """

@@ -2,7 +2,7 @@ example/
 example
 .DS_Store
 *.ini
-test*
+
 .env
 *log
 .flaskenv

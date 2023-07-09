@@ -78,14 +78,14 @@ def main():
         if not args.stripe_only:
             logging.info("Fetching new donations from Paypal...")
             paypal = PaypalAPI(
-                paypal_client_id, paypal_client_secret, last_donation_time[1][0]
+                paypal_client_id, paypal_client_secret, last_donation_time[0][0]
             )
             donations += paypal.get_new_donations()
 
         # Fetch new donations from Stripe
         if not args.paypal_only:
             logging.info("Fetching new donations from Stripe...")
-            stripe = StripeAPI(stripe_api_key, last_donation_time[0][0])
+            stripe = StripeAPI(stripe_api_key, last_donation_time[1][0])
             donations += stripe.get_new_donations()
 
         if not donations:
