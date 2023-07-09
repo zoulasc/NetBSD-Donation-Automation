@@ -95,13 +95,13 @@ def get_last_donation_time() -> list[Donation]:
             conn.close()
 
 
-def insert_donation(donations: list[Donation]) -> int:
+def insert_donation(donations: list[Donation]) -> None:
     """Insert donation details into the database."""
     conn = get_db_connection()
 
     if conn is None:
         logging.warning("Failed to establish database connection.")
-        return 0
+        return None
 
     conn.autocommit = True
 
@@ -125,16 +125,17 @@ def insert_donation(donations: list[Donation]) -> int:
                     donation.access_token,
                 ),
             )
-            logging.info(f"Successfully inserted {donation.confirmation_number} | {donation.email} from {donation.vendor} into database.")
+            logging.info(f"Successfully inserted {donation.confirmation_number} \
+                         | {donation.email} from {donation.vendor} into database.")
         conn.commit()
         logging.info(
             f"Successfully inserted {len(donations)} donation details into database."
         )
-        return 1
+        return None
 
     except psycopg2.Error as error:
         logging.exception(f"Error while executing query: {error}")
-        return 0
+        return None
     finally:
         # Close communication with the database
         if cur:
@@ -154,7 +155,8 @@ def get_donations_in_range(begin_date: int, end_date: int, vendor: str) -> list[
     donations = []
     try:
         cur = conn.cursor()
-        cur.execute(GET_DONATIONS_IN_RANGE, (begin_date, end_date, vendor if vendor else ('Stripe', 'PayPal')))
+        cur.execute(GET_DONATIONS_IN_RANGE, \
+            (begin_date, end_date, vendor if vendor else ('Stripe', 'PayPal')))
         rows = cur.fetchall()
         for row in rows:
             donation = Donation(
@@ -180,14 +182,14 @@ def get_donations_in_range(begin_date: int, end_date: int, vendor: str) -> list[
             cur.close()
         if conn:
             conn.close()
-            
-def insert_deferred_email(donations: list[Donation]) -> int:
+
+def insert_deferred_email(donations: list[Donation]) -> None:
     """Insert deferred emails into the database."""
     conn = get_db_connection()
 
     if conn is None:
         logging.warning("Failed to establish database connection.")
-        return 0
+        return None
 
     conn.autocommit = True
 
@@ -207,18 +209,18 @@ def insert_deferred_email(donations: list[Donation]) -> int:
         logging.info(
             f"Inserted {len(donations)} of deferred emails."
         )
-        return 1
+        return None
 
     except psycopg2.Error as error:
         logging.exception(f"Error while executing query: {error}")
-        return 0
+        return None
     finally:
         # Close communication with the database
         if cur:
             cur.close()
         if conn:
             conn.close()
-            
+
 def get_deferred_emails() -> list[Donation]:
     """Query the database for deferred emails."""
     conn = get_db_connection()
@@ -257,25 +259,25 @@ def get_deferred_emails() -> list[Donation]:
             cur.close()
         if conn:
             conn.close()
-            
+
 def delete_deferred_emails() -> None:
     """Delete the database for deferred emails."""
     conn = get_db_connection()
 
     if conn is None:
         logging.warning("Failed to establish database connection.")
-        return []
+        return None
 
     conn.autocommit = True
     try:
         cur = conn.cursor()
         cur.execute(DELETE_DEFERRED_EMAIL)
-        logging.info(f"Successfully deleted deferred emails from database.")
+        logging.info("Successfully deleted deferred emails from database.")
         return None
 
     except psycopg2.Error as error:
         logging.exception(f"Error while executing query: {error}")
-        return []
+        return None
     finally:
         if cur:
             cur.close()

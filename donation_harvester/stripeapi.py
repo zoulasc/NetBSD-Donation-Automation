@@ -34,7 +34,8 @@ class StripeAPI:
                     charge, self.get_customer(charge.customer)
                 )
                 donations.append(donation)
-            logging.info(f"Stripe - fetched {len(donations)} donations after {self.latest_donation_time}")
+            logging.info(f"Stripe - fetched {len(donations)} \
+                donations after {self.latest_donation_time}")
             return donations
         except stripe.error.StripeError as e:
             logging.error(
