@@ -1,4 +1,4 @@
-"""This module sends a test donation. It can used with --stripe 100 or --paypal 100 to send a test donation of $100.00 to the respective payment processor."""
+"""This module sends a test donation. It can used with --stripe 100 or --paypal 100 to send a test donation of $100.00 to the payment processor."""
 
 import argparse
 import stripe
@@ -36,6 +36,7 @@ if args.stripe:
             amount=int(args.stripe) * 100,
             currency="usd",
             payment_method="pm_card_visa",
+            customer="cus_OERlOKx1fOyc0a",
             confirm=True,
         )
     )
@@ -47,34 +48,37 @@ if args.paypal:
 
     url = "https://api-m.sandbox.paypal.com/v1/payments/payouts"
 
-    payload = json.dumps(
+    payload = json.dumps({
+    "sender_batch_header": {
+        "sender_batch_id": "Payouts_1688915249",
+        "email_subject": "You have a payout!",
+        "email_message": "You have received a payout! Thanks for using our service!"
+    },
+    "items": [
         {
-            "sender_batch_header": {
-                "sender_batch_id": "Payouts_1688909706",
-                "email_subject": "You have a payout!",
-                "email_message": "You have received a payout! Thanks for using our service!",
-            },
-            "items": [
-                {
-                    "recipient_type": "EMAIL",
-                    "amount": {"value": f"{args.paypal}.00", "currency": "USD"},
-                    "note": "Thanks for your patronage!",
-                    "sender_item_id": "201403140001",
-                    "receiver": "sb-4hscv26062116@business.example.com",
-                    "notification_language": "en-US",
-                }
-            ],
+        "recipient_type": "EMAIL",
+        "amount": {
+            "value": f"{args.paypal}.00",
+            "currency": "USD"
+        },
+        "note": "Thanks for your patronage!",
+        "sender_item_id": "201403140001",
+        "receiver": "sb-4hscv26062116@business.example.com",
+        "notification_language": "en-US"
         }
-    )
+    ]
+    })
     headers = {
-        "Content-Type": "application/json",
-        "PayPal-Request-Id": "92637a46-0579-4207-995d-fb78643ccbb0",
-        "Authorization": "Basic QVVNR1NmODJicFZva0dzbVI1OUNSdTNiTkVwcFRRZUNwWDkydE0tVFlkQnJSampqRmlraWRVdGVsVnVoSkRZQWxfYnlTa19GcG5pRldtWV86RU1vbUE4R21UMk1EMFVpVkF5Uy0yUHN5SDhrWllHeG5jVmJxTGFDdGJWYUwtOGpPX0s3T01qYjRiSjk0WUpUOFZGV0x5Q2NNcldaV3N2ak0=",
+    'Content-Type': 'application/json',
+    'PayPal-Request-Id': 'b9a918a8-176f-492a-8f0e-6ac5fdcff91f'
     }
+
+
+
+
 
     try:
         response = requests.request("POST", url, headers=headers, data=payload)
-        response.raise_for_status()
     except requests.exceptions.RequestException as e:
         logging.error(f"Request to PayPal API failed: {e}")
 
