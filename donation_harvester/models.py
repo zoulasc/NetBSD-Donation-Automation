@@ -17,7 +17,8 @@ class Donation:
         access_token = None,
         quantity: int = 1,
     ) -> None:
-        self.confirmation_number = utils.generate_confirmation_number() if not confirmation_number else confirmation_number
+        self.confirmation_number = utils.generate_confirmation_number() \
+            if not confirmation_number else confirmation_number
         self.donor_name = donor_name
         self.currency = currency
         self.quantity = quantity

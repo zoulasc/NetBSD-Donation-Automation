@@ -15,7 +15,8 @@ class PaypalAPI:
     ) -> None:
         # Get access token
         self.access_token = self._get_access_token(client_id, client_secret)
-        # Set latest_donation_time to last_donation_time + 1 sec to avoid getting the same donation twice
+        # Set latest_donation_time to last_donation_time
+        # + 1 sec to avoid getting the same donation twice
         self.latest_donation_time = int(last_donation_time) + 1
 
     def _get_access_token(self, client_id: str, client_secret: str) -> str:
@@ -23,7 +24,8 @@ class PaypalAPI:
         url = PAYPAL_TOKEN_URL
         payload = "grant_type=client_credentials"
         headers = {
-            'Authorization': 'Basic ' + base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+            'Authorization': 'Basic ' + \
+                base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
         }
         try:
             r = requests.post(url, headers=headers, data=payload, timeout=10)
@@ -50,7 +52,9 @@ class PaypalAPI:
         30 days.
         """
         if start_date == 0:
-            start_date = end_date - 2419200 # 1 month in seconds becuase Paypal API requires start_date to be at most 31 days before end_date
+            start_date = end_date - 2419200
+            # 1 month in seconds becuase Paypal API
+            # requires start_date to be at most 31 days before end_date
 
         # if difference is more than a month adjust start_date to be exactly
         # a month before end_date
@@ -58,8 +62,10 @@ class PaypalAPI:
             start_date = end_date - 2419200
 
         # convert datetime object to required format for API
-        start_date = datetime.fromtimestamp(start_date, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-        end_date = datetime.fromtimestamp(end_date, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        start_date = datetime.fromtimestamp(start_date, tz=timezone.utc)\
+            .strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        end_date = datetime.fromtimestamp(end_date, tz=timezone.utc)\
+            .strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
         headers = {"Authorization": f"Bearer {self.access_token}"}
 
@@ -104,7 +110,8 @@ class PaypalAPI:
         for transaction in transactions:
             donation = self._transaction_to_donation(transaction)
             donations.append(donation)
-        logging.info(f"PayPal - fetched {len(donations)} donations between {start_date} and {end_date}")
+        logging.info(f"PayPal - fetched {len(donations)}\
+            donations between {start_date} and {end_date}")
         return donations
 
     def _transaction_to_donation(self, transaction: dict[str, str]) -> Donation:

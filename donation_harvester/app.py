@@ -3,7 +3,9 @@ import argparse
 from datetime import datetime
 import logging
 
-from database import get_last_donation_time, get_donations_in_range, insert_donation, get_deferred_emails, delete_deferred_emails
+from database import get_last_donation_time, \
+    get_donations_in_range, insert_donation, \
+    get_deferred_emails, delete_deferred_emails
 from stripeapi import StripeAPI
 from paypalapi import PaypalAPI
 from mailing import sendmail
@@ -33,18 +35,27 @@ def main():
     subparsers = parser.add_subparsers(dest='command', required=True)
 
     update_parser = subparsers.add_parser('update', help="Enables database insertion.")
-    update_parser.add_argument("--paypal-only", action="store_true", help="Fetches data only from Paypal.")
-    update_parser.add_argument("--stripe-only", action="store_true", help="Fetches data only from Stripe.")
-    update_parser.add_argument("--dry-run", action="store_true", help="Only prints the actions it would take, without taking them.")
+    update_parser.add_argument("--paypal-only", action="store_true", \
+        help="Fetches data only from Paypal.")
+    update_parser.add_argument("--stripe-only", action="store_true", \
+        help="Fetches data only from Stripe.")
+    update_parser.add_argument("--dry-run", action="store_true", \
+        help="Only prints the actions it would take, without taking them.")
     update_parser.add_argument("--no-email", action="store_true", help="Disables email sending.")
-    update_parser.add_argument("--json", nargs='?', const='donations.json', help="Outputs the results as a JSON file. You can optionally specify the output file name.")
+    update_parser.add_argument("--json", nargs='?', const='donations.json', \
+        help="Outputs the results as a JSON file. You can optionally specify the output file name.")
 
     list_parser = subparsers.add_parser('list', help="Lists the donations from the database.")
-    list_parser.add_argument("--paypal-only", action="store_true", help="Fetches data only from Paypal.")
-    list_parser.add_argument("--stripe-only", action="store_true", help="Fetches data only from Stripe.")
-    list_parser.add_argument("--begin-date", type=lambda s: int(datetime.strptime(s, "%Y-%m-%d").timestamp()), help="The begin date for listing donations (format: YYYY-MM-DD).")
-    list_parser.add_argument("--end-date", type=lambda s: int(datetime.strptime(s, "%Y-%m-%d").timestamp()), help="The end date for listing donations (format: YYYY-MM-DD).")
-    list_parser.add_argument("--json", nargs='?', const='donations.json', help="Outputs the results as a JSON file. You can optionally specify the output file name.")
+    list_parser.add_argument("--paypal-only", action="store_true", \
+        help="Fetches data only from Paypal.")
+    list_parser.add_argument("--stripe-only", action="store_true", \
+        help="Fetches data only from Stripe.")
+    list_parser.add_argument("--begin-date", type=lambda s: int(datetime.strptime(s, "%Y-%m-%d")\
+        .timestamp()), help="The begin date for listing donations (format: YYYY-MM-DD).")
+    list_parser.add_argument("--end-date", type=lambda s: int(datetime.strptime(s, "%Y-%m-%d")\
+        .timestamp()), help="The end date for listing donations (format: YYYY-MM-DD).")
+    list_parser.add_argument("--json", nargs='?', const='donations.json', \
+        help="Outputs the results as a JSON file. You can optionally specify the output file name.")
 
     send_parser = subparsers.add_parser('send-deferred-emails', help="Send deferred emails.")
 
@@ -55,7 +66,6 @@ def main():
     # Get new donations
     donations = []
 
-    
     if args.command == "update":
         # Fetch the last donation time from the database
         last_donation_time = get_last_donation_time()
@@ -85,7 +95,8 @@ def main():
             # Dry-run
             for donation in donations:
                 print(
-                    f"Would insert and send mail to {donation.email} for the donation in {donation.date_time}"
+                    f"Would insert and send mail to {donation.email}\
+                        for the donation in {donation.date_time}"
                 )
             print(f"Would insert {len(donations)} donations in total.")
 
@@ -93,13 +104,15 @@ def main():
         if not args.no_email and not args.dry_run:
             logging.info("Sending emails...")
             sendmail(donations)
-            
+
         if args.json:
             json_output(donations, args.json)
-    
+
     elif args.command == "list":
-        end_date = args.end_date or int(datetime.now().timestamp()) # get current timestamp if not provided
-        begin_date = args.begin_date or (end_date - 2419200) # get timestamp from 1 month ago if not provided
+        end_date = args.end_date or int(datetime.now().timestamp())
+        # get current timestamp if not provided
+        begin_date = args.begin_date or (end_date - 2419200)
+        # get timestamp from 1 month ago if not provided
 
         if args.stripe_only:
             vendor = ("Stripe",)
@@ -113,7 +126,7 @@ def main():
             donation.print_donation()
         if args.json:
             json_output(donations, args.json)
-    
+
     elif args.command == "send-deferred-emails":
         logging.info("Checking for deferred emails...")
         donations = get_deferred_emails()
@@ -127,8 +140,6 @@ def main():
      # If runned without required arguments
     else:
         logging.info("No required arguments provided, program is exiting.")
-        
-    
 
 if __name__ == "__main__":
     main()
