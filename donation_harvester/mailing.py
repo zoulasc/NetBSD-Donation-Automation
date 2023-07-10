@@ -46,6 +46,7 @@ def sendmail(donations: list[Donation]) -> None:
         return
 
     logging.info(f"Logged in to {smtp_server} successfully.")
+    failed_donations = []
     for donation in donations:
         if not validate_email(donation.email):
             logging.warning(
@@ -71,6 +72,10 @@ def sendmail(donations: list[Donation]) -> None:
             logging.info(f"mail sent to {donation.email}")
         except smtplib.SMTPException as error:
             logging.warning(f"Error occurred while sending email: {error}")
+            failed_donations.append(donation)
             continue
+
+    if failed_donations:
+        insert_deferred_email(failed_donations)
 
     server.quit()

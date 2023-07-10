@@ -1,25 +1,26 @@
 """models.py is the database query preperation layer for the feedback site."""
 import logging
-from database import execute_query
 
+from database import execute_query
+from dbconfig import PREFIX
 
 class Donation:
     """The Donation class represents a donation in the database."""
 
-    SQL_CHECK_EXISTS_BY_EMAIL_AND_CONFIRMATION = """
+    SQL_CHECK_EXISTS_BY_EMAIL_AND_CONFIRMATION = f"""
     PREPARE check_donation (text, int) AS
     SELECT EXISTS (
       SELECT 1
-      FROM donations.information d
+      FROM {PREFIX}.information d
       WHERE d.email = $1 AND d.confirmation_no = $2
     );
     EXECUTE check_donation(%s, %s);
     """
 
-    SQL_GET_BY_TOKEN = """
+    SQL_GET_BY_TOKEN = f"""
     PREPARE get_donation_by_token (text) AS
     SELECT confirmation_no
-    FROM donations.information
+    FROM {PREFIX}.information
     WHERE uuid = $1;
     EXECUTE get_donation_by_token(%s);
     """
@@ -44,15 +45,15 @@ class Donation:
 class Feedback:
     """The Feedback class represents a feedback in the database."""
 
-    SQL_CHECK_EXISTS_BY_CONFIRMATION = """
+    SQL_CHECK_EXISTS_BY_CONFIRMATION = f"""
     PREPARE check_feedback (int) AS
-    SELECT EXISTS(SELECT 1 FROM donations.interaction WHERE confirmation_no = $1);
+    SELECT EXISTS(SELECT 1 FROM {PREFIX}.interaction WHERE confirmation_no = $1);
     EXECUTE check_feedback(%s);
     """
 
-    SQL_INSERT_FEEDBACK = """
+    SQL_INSERT_FEEDBACK = f"""
     PREPARE insert_feedback (int, bool, text, bool, text, bool, text) AS
-    INSERT INTO donations.interaction VALUES($1, $2, $3, $4, $5, $6, $7);
+    INSERT INTO {PREFIX}.interaction VALUES($1, $2, $3, $4, $5, $6, $7);
     EXECUTE insert_feedback(%s, %s, %s, %s, %s, %s, %s);
     """
 

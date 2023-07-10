@@ -1,30 +1,9 @@
 """database.py is the database layer for the feedback site."""
 from typing import Any
 import logging
-import psycopg2
+#import psycopg2
 
-
-# Define connection parameters
-DB_CONFIG = {
-    "database": "donations_data",
-    "user": "donations_user",
-    "password": "test@123",
-    "host": "127.0.0.1",
-    "port": "5432",
-}
-
-
-def get_db_connection() -> psycopg2.extensions.connection:
-    """
-    Establish and return a connection with the database.
-    """
-    try:
-        conn = psycopg2.connect(**DB_CONFIG)
-        logging.info("Connected to DB")
-        return conn
-    except psycopg2.Error as error:
-        logging.warning(f"Error while connecting to PostgreSQL: {error}")
-        return None
+from dbconfig import get_db_connection
 
 
 def execute_query(query: str, *params: Any):
