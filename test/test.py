@@ -10,16 +10,17 @@ import json
 logging.getLogger().addHandler(logging.StreamHandler())
 
 
-parser = argparse.ArgumentParser(description="Donation Update System.")
+parser = argparse.ArgumentParser(description="Donation Test")
+group = parser.add_mutually_exclusive_group(required=True)
 
-parser.add_argument(
+group.add_argument(
     "--stripe",
     nargs="?",
     const="10000",
     default=False,
 )
 
-parser.add_argument(
+group.add_argument(
     "--paypal",
     nargs="?",
     const="100",
