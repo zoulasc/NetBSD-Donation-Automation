@@ -1,4 +1,5 @@
 """app.py is the main entry point for the feedback site."""
+import datetime
 import logging
 from threading import Thread
 from uuid import UUID
@@ -25,6 +26,11 @@ def index() -> str:
     """Render the index page."""
     return render_template("index.html")
 
+@app.route("/donations")
+def donations() -> str:
+    """Render the index page."""
+    this_year = datetime.datetime.now().year
+    return render_template("donations.html", year=this_year,donors=Feedback.get_all_by_year(str(this_year)))
 
 @app.route("/validate", methods=["POST"])
 def validate() -> str:

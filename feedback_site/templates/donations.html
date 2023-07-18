@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+	<h1>Donations to The NetBSD Foundation in {{ year }}</h1>
+	<h2>Monetary donations</h2>
+    <br>
+<table class="table table-striped">
+
+    {% for donor in donors %}
+  <tr>
+    <td>{{donor[0]}}</td>  
+    <td>{{donor[1]}}</td>
+  </tr>
+{% endfor %}
+  
+</table>
+
+
+</div>
+
+{% endblock %}

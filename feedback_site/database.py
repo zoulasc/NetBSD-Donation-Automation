@@ -1,7 +1,7 @@
 """database.py is the database layer for the feedback site."""
 from typing import Any
 import logging
-#import psycopg2
+import psycopg2
 
 from dbconfig import get_db_connection
 
@@ -26,7 +26,13 @@ def execute_query(query: str, *params: Any):
         if "INSERT" in query:
             conn.commit()
             return 1
-
+        
+        # If the query is for getting donors (multiple), use fetchall
+        if "SELECT i.name" in query:
+            result = cur.fetchall()
+            logging.info(f"result: {result}")
+            return result
+        
         # Fetch one result
         result = cur.fetchone()
         logging.info(f"result: {result}")

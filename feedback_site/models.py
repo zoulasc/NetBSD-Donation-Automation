@@ -56,6 +56,16 @@ class Feedback:
     INSERT INTO {PREFIX}.interaction VALUES($1, $2, $3, $4, $5, $6, $7);
     EXECUTE insert_feedback(%s, %s, %s, %s, %s, %s, %s);
     """
+    
+    SQL_GET_DONORS_THIS_YEAR = f""" 
+    SELECT i.name, 
+        CASE WHEN i.answer2 THEN i.email ELSE NULL END
+    FROM {PREFIX}.interaction AS i
+    INNER JOIN {PREFIX}.information AS inf 
+    ON i.confirmation_no = inf.confirmation_no 
+    WHERE i.answer1 = TRUE 
+        AND EXTRACT(YEAR FROM TO_TIMESTAMP(inf.datetime)) = %s;
+    """
 
     @classmethod
     def exists_by_confirmation(cls, confirmation_no):
@@ -68,3 +78,9 @@ class Feedback:
         """Insert the feedback into the database."""
         logging.info(f"Insert feedback: {feedback_info}")
         return execute_query(cls.SQL_INSERT_FEEDBACK, *feedback_info.values())
+    
+    @classmethod
+    def get_all_by_year(cls,year):
+        """Get donors who wanted to be listed this year."""
+        logging.info(f"Get donors this year: {year}")
+        return execute_query(cls.SQL_GET_DONORS_THIS_YEAR, year)
