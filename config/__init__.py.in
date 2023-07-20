@@ -1,0 +1,168 @@
+"""Database and email configuration."""
+
+from typing import Any
+import logging
+import smtplib
+import ssl
+from datetime import datetime
+from configparser import ConfigParser
+import sys
+import os
+import psycopg2
+
+from validate_email import validate_email
+
+
+class Donation:
+    """This class represents a donation."""
+
+    def __init__(
+        self,
+        donor_name: str,
+        amount: float,
+        currency: str,
+        email: str,
+        date_time: int,
+        vendor: str,
+        confirmation_number = None,
+        access_token = None,
+        quantity: int = 1,
+    ) -> None:
+        self.confirmation_number = confirmation_number
+        self.donor_name = donor_name
+        self.currency = currency
+        self.quantity = quantity
+        self.email = email
+        self.vendor = vendor
+        self.date_time = date_time
+        self.amount = amount
+        self.access_token = access_token
+   
+
+
+
+# Get the current script's directory
+script_dir = os.path.dirname(__file__)
+
+
+# Read mail configuration from config.ini
+config = ConfigParser()
+config.read(os.path.join(script_dir, "mail_config.ini"), encoding="utf-8")
+sender_email = config["email"]["sender"]
+
+URL = "localhost:5000"
+
+
+PREFIX = "@PREFIX@"
+PASSWORD = "@PASSWORD@"
+
+# Define connection parameters
+DB_CONFIG = {
+    "database": f"{PREFIX}_data",
+    "user": f"{PREFIX}_user",
+    "password": PASSWORD,
+    "host": "127.0.0.1",
+    "port": "5432",
+}
+
+
+def get_db_connection() -> psycopg2.extensions.connection:
+    """
+    Establish and return a connection with the database.
+    """
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        logging.info("Connected to DB")
+        return conn
+    except psycopg2.Error as error:
+        logging.warning(f"Error while connecting to PostgreSQL: {error}")
+        return None
+
+
+def get_server(config) -> smtplib.SMTP:
+    """
+    Get the SMTP server from the config file and login to it.
+    """
+    smtp_server = config["smtp"]["server"]
+    port_no = int(config["smtp"]["port"])
+    smtp_login = config["smtp"]["login"]
+    smtp_password = config["smtp"]["password"]
+
+    # Try to login to server
+    try:
+        if port_no == 25:
+            server = smtplib.SMTP(smtp_server, port_no)
+        else:
+            context = ssl.create_default_context()
+            server = smtplib.SMTP_SSL(smtp_server, port_no, context=context)
+            server.login(smtp_login, smtp_password)
+        logging.info(f"Logged in to {smtp_server} successfully.")
+        return server
+    except (smtplib.SMTPException, OSError) as error:
+        logging.warning(f"Error occurred while sending email: {error}")
+        return None
+
+
+def send_url_mail(donations: list[Donation]) -> list[Donation]:
+    """
+    Send email that contains the URL to the donation page.
+    """
+
+    # Get credentials from config file
+    debug_receiver_email = config["email"]["receiver"]
+    ack_text = config["msg"]["ack"]
+
+    server = get_server(config)
+    if server is None:
+        return donations
+
+    failed_donations = []
+    for donation in donations:
+        if debug_receiver_email == "":
+            receiver_email = donation.email
+        else:
+            receiver_email = debug_receiver_email
+        # Create the email message
+        msg = ack_text.format(
+            donor_name=donation.donor_name,
+            amount=donation.amount,
+            date=datetime.fromtimestamp(donation.date_time),
+            currency=donation.currency,
+            confirmation_number=donation.confirmation_number,
+            access_token=donation.access_token,
+            address=URL,
+        )
+
+        result = sendmail(receiver_email, msg, server)
+        if not result:
+            failed_donations.append(donation)
+
+    server.quit()
+
+    if failed_donations:
+        return failed_donations
+    return None
+
+
+def send_thank_mail(receiver) -> None:
+    """
+    Send email that contains the thank you message.
+    """
+    thank_text = config["msg"]["thank"]
+    sendmail(receiver, thank_text, get_server(config))
+
+
+def sendmail(receiver, msg, server) -> bool:
+    """
+    Send intended email to the receiver.
+    """
+    if not validate_email(receiver):
+        logging.warning(f"Invalid email address: {receiver}, skipping...")
+        return False
+    try:
+        server.sendmail(sender_email, receiver, msg)
+        logging.info(f"mail sent to {receiver}")
+        return True
+    except smtplib.SMTPException as error:
+        logging.warning(f"Error occurred while sending email to {receiver}: {error}")
+        return False

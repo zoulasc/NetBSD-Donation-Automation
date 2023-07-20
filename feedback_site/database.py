@@ -3,7 +3,7 @@ from typing import Any
 import logging
 import psycopg2
 
-from dbconfig import get_db_connection
+from config import get_db_connection
 
 
 def execute_query(query: str, *params: Any):

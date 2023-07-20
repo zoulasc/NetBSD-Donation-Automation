@@ -2,7 +2,7 @@
 import logging
 
 from database import execute_query
-from dbconfig import PREFIX
+from config import PREFIX
 
 class Donation:
     """The Donation class represents a donation in the database."""

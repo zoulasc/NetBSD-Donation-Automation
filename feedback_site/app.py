@@ -5,8 +5,8 @@ from threading import Thread
 from uuid import UUID
 
 from flask import Flask, render_template, request
-from mailing import sendmail
-from models import Donation, Feedback
+from config import send_thank_mail
+from queries import Donation, Feedback
 
 
 app = Flask(__name__)
@@ -98,7 +98,7 @@ def store(feedback_id: str) -> str:
 
 def send_async_email(app, receiver_email):
     with app.app_context():
-        sendmail(receiver_email)
+        send_thank_mail(receiver_email)
 
 def valid_uuid(uuid_string):
     """Check if the provided string is a valid UUID."""

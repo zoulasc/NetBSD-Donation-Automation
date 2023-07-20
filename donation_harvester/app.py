@@ -8,7 +8,7 @@ from database import get_last_donation_time, \
     get_deferred_emails, delete_deferred_emails
 from stripeapi import StripeAPI
 from paypalapi import PaypalAPI
-from mailing import sendmail
+from config import send_url_mail
 from utils import json_output
 
 
@@ -140,6 +140,12 @@ def main():
      # If runned without required arguments
     else:
         logging.info("No required arguments provided, program is exiting.")
+        
+def sendmail(donations):
+    deferred = send_url_mail(donations)
+    if deferred:
+        logging.info("Inserting deferred emails into the database...")
+        insert_deferred_email(deferred)
 
 if __name__ == "__main__":
     main()
