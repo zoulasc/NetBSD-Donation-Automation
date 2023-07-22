@@ -11,9 +11,8 @@ from database import get_last_donation_time, \
 from stripeapi import StripeAPI
 from paypalapi import PaypalAPI
 from config import send_url_mail
-from models import donation_to_dict, dict_to_donation
-
-from utils import json_output
+from config.models import dict_to_donation
+from config.utils import json_output
 
 def main():
     """
@@ -148,7 +147,7 @@ def sendmail(donations):
     """
     This function send mails to the donors, and insert the failed ones into the database.
     """
-    deferred = dict_to_donation(send_url_mail(donation_to_dict(donations)))
+    deferred = dict_to_donation(send_url_mail(donations))
     if deferred:
         logging.info("Inserting deferred emails into the database...")
         insert_deferred_email(deferred)

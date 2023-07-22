@@ -1,7 +1,7 @@
 """This module contains the Stripe API operations."""
 import logging
 import stripe
-from models import Donation
+from config.models import Donation
 
 # Define a constant for conversion factor
 CENTS_IN_DOLLAR = 100
