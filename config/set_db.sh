@@ -3,7 +3,7 @@
 set -e
 PREFIX=donations
 DB_USER="${PREFIX}_user"
-DB_PASS="test@123"
+DB_PASS="root"
 DB_NAME="${PREFIX}_data"
 
 # Database variables

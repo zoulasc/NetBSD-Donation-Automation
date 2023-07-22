@@ -4,6 +4,9 @@ import logging
 import json
 
 
+
+
+
 def generate_confirmation_number() -> str:
     """Generate a random six-digit number"""
     return str(uuid.uuid4().int)[0:6]
@@ -20,3 +23,4 @@ def json_output(donations, filename='donations.json') -> None:
             [donation.__dict__ for donation in donations],f
             )
     logging.info(f"Successfully outputted results as {filename}")
+

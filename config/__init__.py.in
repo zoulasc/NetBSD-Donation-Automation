@@ -1,6 +1,6 @@
 """Database and email configuration."""
 
-from typing import Any
+from typing import List, Dict
 import logging
 import smtplib
 import ssl
@@ -11,35 +11,6 @@ import os
 import psycopg2
 
 from validate_email import validate_email
-
-
-class Donation:
-    """This class represents a donation."""
-
-    def __init__(
-        self,
-        donor_name: str,
-        amount: float,
-        currency: str,
-        email: str,
-        date_time: int,
-        vendor: str,
-        confirmation_number = None,
-        access_token = None,
-        quantity: int = 1,
-    ) -> None:
-        self.confirmation_number = confirmation_number
-        self.donor_name = donor_name
-        self.currency = currency
-        self.quantity = quantity
-        self.email = email
-        self.vendor = vendor
-        self.date_time = date_time
-        self.amount = amount
-        self.access_token = access_token
-   
-
-
 
 # Get the current script's directory
 script_dir = os.path.dirname(__file__)
@@ -103,9 +74,9 @@ def get_server(config) -> smtplib.SMTP:
         return None
 
 
-def send_url_mail(donations: list[Donation]) -> list[Donation]:
+def send_url_mail(donations: List[Dict]) -> List[Dict]:
     """
-    Send email that contains the URL to the donation page.
+    Prepare email that contains the URL to the donation page.
     """
 
     # Get credentials from config file
@@ -119,17 +90,18 @@ def send_url_mail(donations: list[Donation]) -> list[Donation]:
     failed_donations = []
     for donation in donations:
         if debug_receiver_email == "":
-            receiver_email = donation.email
+            receiver_email = donation["email"]
         else:
             receiver_email = debug_receiver_email
+
         # Create the email message
         msg = ack_text.format(
-            donor_name=donation.donor_name,
-            amount=donation.amount,
-            date=datetime.fromtimestamp(donation.date_time),
-            currency=donation.currency,
-            confirmation_number=donation.confirmation_number,
-            access_token=donation.access_token,
+            donor_name=donation["donor_name"],
+            amount=donation["amount"],
+            date=datetime.fromtimestamp(donation["date_time"]),
+            currency=donation["currency"],
+            confirmation_number=donation["confirmation_number"],
+            access_token=donation["access_token"],
             address=URL,
         )
 
@@ -143,10 +115,9 @@ def send_url_mail(donations: list[Donation]) -> list[Donation]:
         return failed_donations
     return None
 
-
 def send_thank_mail(receiver) -> None:
     """
-    Send email that contains the thank you message.
+    Prepare email that contains the thank you message.
     """
     thank_text = config["msg"]["thank"]
     sendmail(receiver, thank_text, get_server(config))

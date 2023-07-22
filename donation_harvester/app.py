@@ -2,15 +2,18 @@
 import argparse
 from datetime import datetime
 import logging
+from typing import List, Dict
 
 from database import get_last_donation_time, \
     get_donations_in_range, insert_donation, \
-    get_deferred_emails, delete_deferred_emails
+    get_deferred_emails, delete_deferred_emails, \
+    insert_deferred_email
 from stripeapi import StripeAPI
 from paypalapi import PaypalAPI
 from config import send_url_mail
-from utils import json_output
+from models import donation_to_dict, dict_to_donation
 
+from utils import json_output
 
 def main():
     """
@@ -142,7 +145,10 @@ def main():
         logging.info("No required arguments provided, program is exiting.")
         
 def sendmail(donations):
-    deferred = send_url_mail(donations)
+    """
+    This function send mails to the donors, and insert the failed ones into the database.
+    """
+    deferred = dict_to_donation(send_url_mail(donation_to_dict(donations)))
     if deferred:
         logging.info("Inserting deferred emails into the database...")
         insert_deferred_email(deferred)

@@ -1,6 +1,8 @@
 """This file contains the Donation class."""
 from datetime import datetime
+from typing import List, Dict
 import utils
+
 
 class Donation:
     """This class represents a donation."""
@@ -40,3 +42,39 @@ class Donation:
             f"access_token: {self.access_token}\n",
             "----------------------------------------"
         )
+
+def donation_to_dict(donations: List[Donation]) -> List[Dict]:
+    if not donations:
+        return None
+    donations_dict = []
+    for donation in donations:
+        donations_dict.append({
+            "confirmation_number": donation.confirmation_number,
+            "donor_name": donation.donor_name,
+            "currency": donation.currency,
+            "quantity": donation.quantity,
+            "email": donation.email,
+            "vendor": donation.vendor,
+            "date_time": donation.date_time,
+            "amount": donation.amount,
+            "access_token": donation.access_token,
+        })
+    return donations_dict
+
+def dict_to_donation(donations_dict: List[Dict]) -> List[Donation]:
+    if not donations_dict:
+        return None
+    donations = []
+    for donation_dict in donations_dict:
+        donations.append(Donation(
+            confirmation_number=donation_dict.get("confirmation_number"),
+            donor_name=donation_dict.get("donor_name"),
+            currency=donation_dict.get("currency"),
+            quantity=donation_dict.get("quantity"),
+            email=donation_dict.get("email"),
+            vendor=donation_dict.get("vendor"),
+            date_time=donation_dict.get("date_time"),
+            amount=donation_dict.get("amount"),
+            access_token=donation_dict.get("access_token"),
+        ))
+    return donations
