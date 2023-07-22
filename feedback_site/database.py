@@ -26,11 +26,11 @@ def execute_query(query: str, *params: Any):
         if "INSERT" in query:
             conn.commit()
             return 1
-        
+
         # Fetch all
         result = cur.fetchall()
         logging.info(f"result: {result}")
-        
+
         return result if result else None
     except psycopg2.Error as error:
         logging.warning(f"Error while executing query: {error}")

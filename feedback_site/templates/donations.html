@@ -5,14 +5,19 @@
 	<h2>Monetary donations</h2>
     <br>
 <table class="table table-striped">
-
+    {% if donors is not none: %}
     {% for donor in donors %}
   <tr>
     <td>{{donor[0]}}</td>  
-    <td>{{donor[1]}}</td>
+    <td>{{donor[2]}}</td>
+    <td><img src="./{{donor[1]}}"></img></td>
   </tr>
 {% endfor %}
-  
+{% else %}
+<tr>
+    <td>No donors found</td>
+</tr>
+{% endif %}
 </table>
 
 
