@@ -1,15 +1,20 @@
 """app.py is the main entry point for the feedback site."""
 import datetime
 import logging
+import os
 from threading import Thread
-from uuid import UUID
 
-from flask import Flask, render_template, request
-from config import send_thank_mail
-from queries import Donation, Feedback
+from flask import Flask, render_template, request, session
+from models import Donation
+from utils import allowed_file, send_async_email,valid_uuid, toDonation,dict_to_donation
+from queries import DonationSQL, FeedbackSQL
 
+from PIL import Image
+from werkzeug.utils import secure_filename
+from io import BytesIO
 
 app = Flask(__name__)
+app.secret_key = "any random string"
 
 # Set up logging
 logging.basicConfig(
@@ -39,23 +44,29 @@ def validate() -> str:
     email = request.form.get("email")
 
     # Check if a donation exists for the given email and feedback ID
-    if not Donation.exists_by_email_and_confirmation(email, feedback_id):
+    donation = DonationSQL.exists_by_email_and_confirmation(email, feedback_id)
+    if not donation:
         logging.info(f"No donation found: {email} - {feedback_id}")
         return render_template("nodonation.html")
     logging.info(f"Donation found with: {email} - {feedback_id}")
     
     # Check if feedback already exists for the given feedback ID
-    if Feedback.exists_by_confirmation(feedback_id):
+    if FeedbackSQL.exists_by_confirmation(feedback_id)[0][0]:
         logging.info(f"Feedback already recieved {email} - {feedback_id}")
         return render_template("invalid.html", identifier=feedback_id)
     
+    # Success
+    donation = toDonation(donation[0])
+    session['donation'] = donation.__dict__
+    
+    logging.info(f"Feedback page created for {donation.confirmation_number}")
     logging.info(f"Validated {email} - {feedback_id}")
-    return render_template("valid.html", fid=feedback_id)
+    return render_template("valid.html", fid=donation.confirmation_number)
 
 
 @app.route("/feedback")
 def feedback_by_mail():
-    """Handle feedback provided via email."""
+    """Handle feedback by the url provided via email."""
     token = request.args.get("token")
 
     # Check if uuid is valid
@@ -63,49 +74,91 @@ def feedback_by_mail():
         return render_template("nodonation.html")
 
     # Get confirmation number by uuid
-    confirmation = Donation.get_by_token(token)
+    donation = DonationSQL.exists_by_token(token)
 
     # Check if a donation exists for the given uuid
-    if not confirmation:
+    if not donation:
         return render_template("nodonation.html")
 
     # Check if feedback already exists for the given uuid
-    if Feedback.exists_by_confirmation(confirmation):
+    if FeedbackSQL.exists_by_confirmation(donation[0][0])[0][0]:
         logging.info(f"Feedback already recieved {token}")
         return render_template("invalid.html", identifier=confirmation)
+    # Success
+    donation = toDonation(donation[0])
+    session['donation'] = donation.__dict__
+    
     logging.info(f"Validated {token}")
-    return render_template("valid.html", fid=confirmation)
+    logging.info(f"Feedback page created for {donation.confirmation_number}")
+    return render_template("valid.html", fid=donation.access_token)
 
 
-@app.route("/store/<string:feedback_id>", methods=["POST"])
-def store(feedback_id: str) -> str:
+@app.route("/store/<string:token>", methods=["POST"])
+def store(token: str) -> str:
     """Store feedback responses and handle optional notification email."""
+    
+    donation = dict_to_donation(session['donation'])
+    
+    
     feedback_responses = {
-        "confirmation_no": int(feedback_id),
+        "confirmation_no": int(donation.confirmation_number),
         "name_question": request.form.get("answer1"),
         "name": request.form.get("name", "Anonymous"),
         "email_question": request.form.get("answer2"),
         "email": request.form.get("email"),
         "notification_question": request.form.get("answer3"),
         "notification_email": request.form.get("notification_email", "-"),
+        "logo_filepath": None,
     }
-    logging.info(f"Got feedback {feedback_id}")
-    Feedback.insert(feedback_responses)
+    
+    #Get image from the form
+    # Save the logo if donation amount exceeds $1000 and image is provided
+    amount = float(donation.amount)
+    
+    if amount > 1000:
+        file = request.files.get('logo')
+        logging.info(f"Received file: {file.filename}")
+        if file and allowed_file(file.filename):
+            file.seek(0, os.SEEK_END)
+            file_length = file.tell()
+            if file_length > 50 * 1024 * 1024:  # 50MB
+                logging.error(f"File too large: {file_length}")
+                return "File too large", 413  # 413 is HTTP status code for 'Payload Too Large'
+            file.seek(0, 0)  # Reset file pointer
+            
+            filename = secure_filename(donation.access_token + file.filename)
+            img = Image.open(file)
+
+            # Determine the new dimensions while keeping the aspect ratio
+            aspect_ratio = img.width / img.height
+            new_height = new_width = 0
+            if amount > 10000:
+                new_width = 500
+            elif amount > 5000:
+                new_width = 350
+            else:
+                new_width = 150
+            new_height = int(new_width / aspect_ratio)  # Calculate new height based on aspect ratio and new width
+
+            # Resizing the image
+            img = img.resize((new_width, new_height), Image.ANTIALIAS)
+        
+            
+            if not os.path.exists('uploads'):
+                os.makedirs('uploads')
+                
+            # Save the image file to a directory named 'uploads'
+            logging.info(f"Saving file: uploads/{filename}")  
+            img.save(f'uploads/{filename}', optimize=True, quality=85)
+        
+            feedback_responses["logo_filepath"] = f'uploads/{filename}'
+    
+    logging.info(f"Got feedback {donation.confirmation_number}")
+    FeedbackSQL.insert(feedback_responses)
+    
     # Send notification email asynchronously to not block the rendering of the thank you page
     Thread(target=send_async_email, args=(app, feedback_responses["notification_email"])).start()
 
     return render_template("thank_you.html")
 
-def send_async_email(app, receiver_email):
-    with app.app_context():
-        send_thank_mail(receiver_email)
 
-def valid_uuid(uuid_string):
-    """Check if the provided string is a valid UUID."""
-    try:
-        UUID(uuid_string)
-        logging.info(f"Valid Token: {uuid_string}")
-        return True
-    except ValueError:
-        logging.info(f"Invalid Token: {uuid_string}")
-        return False

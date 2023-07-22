@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS @PREFIX@.interaction
     email character varying COLLATE pg_catalog."default",
     answer3 boolean NOT NULL,
     notification_email character varying COLLATE pg_catalog."default",
+    logo_filepath character varying COLLATE pg_catalog."default",
     CONSTRAINT payment_id PRIMARY KEY (confirmation_no)
 );
 

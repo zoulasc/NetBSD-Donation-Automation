@@ -27,17 +27,11 @@ def execute_query(query: str, *params: Any):
             conn.commit()
             return 1
         
-        # If the query is for getting donors (multiple), use fetchall
-        if "SELECT i.name" in query:
-            result = cur.fetchall()
-            logging.info(f"result: {result}")
-            return result
-        
-        # Fetch one result
-        result = cur.fetchone()
+        # Fetch all
+        result = cur.fetchall()
         logging.info(f"result: {result}")
-        # get rid of tuple and return
-        return result[0] if result else None
+        
+        return result if result else None
     except psycopg2.Error as error:
         logging.warning(f"Error while executing query: {error}")
         return []

@@ -4,26 +4,25 @@ import logging
 from database import execute_query
 from config import PREFIX
 
-class Donation:
+class DonationSQL:
     """The Donation class represents a donation in the database."""
 
     SQL_CHECK_EXISTS_BY_EMAIL_AND_CONFIRMATION = f"""
-    PREPARE check_donation (text, int) AS
-    SELECT EXISTS (
-      SELECT 1
-      FROM {PREFIX}.information d
-      WHERE d.email = $1 AND d.confirmation_no = $2
-    );
-    EXECUTE check_donation(%s, %s);
+    PREPARE get_donations (text, int) AS
+    SELECT *
+    FROM {PREFIX}.information d
+    WHERE d.email = $1 AND d.confirmation_no = $2;
+    EXECUTE get_donations(%s, %s);
     """
 
-    SQL_GET_BY_TOKEN = f"""
-    PREPARE get_donation_by_token (text) AS
-    SELECT confirmation_no
+    SQL_EXISTS_BY_TOKEN = f"""
+    PREPARE get_donations_by_token (text) AS
+    SELECT *
     FROM {PREFIX}.information
     WHERE uuid = $1;
-    EXECUTE get_donation_by_token(%s);
+    EXECUTE get_donations_by_token(%s);
     """
+
 
     @classmethod
     def exists_by_email_and_confirmation(cls, email, confirmation_no):
@@ -36,13 +35,13 @@ class Donation:
         )
 
     @classmethod
-    def get_by_token(cls, token):
+    def exists_by_token(cls, token):
         """Get a donation by its token."""
         logging.info(f"Check donation by token: {token}")
-        return execute_query(cls.SQL_GET_BY_TOKEN, token)
+        return execute_query(cls.SQL_EXISTS_BY_TOKEN, token)
 
 
-class Feedback:
+class FeedbackSQL:
     """The Feedback class represents a feedback in the database."""
 
     SQL_CHECK_EXISTS_BY_CONFIRMATION = f"""
@@ -52,9 +51,9 @@ class Feedback:
     """
 
     SQL_INSERT_FEEDBACK = f"""
-    PREPARE insert_feedback (int, bool, text, bool, text, bool, text) AS
-    INSERT INTO {PREFIX}.interaction VALUES($1, $2, $3, $4, $5, $6, $7);
-    EXECUTE insert_feedback(%s, %s, %s, %s, %s, %s, %s);
+    PREPARE insert_feedback (int, bool, text, bool, text, bool, text, text) AS
+    INSERT INTO {PREFIX}.interaction VALUES($1, $2, $3, $4, $5, $6, $7, $8);
+    EXECUTE insert_feedback(%s, %s, %s, %s, %s, %s, %s, %s);
     """
     
     SQL_GET_DONORS_THIS_YEAR = f""" 
