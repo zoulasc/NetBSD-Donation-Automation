@@ -3,7 +3,7 @@ import base64
 import logging
 from datetime import datetime, timezone
 import requests
-from models import Donation
+from config.models import Donation
 
 PAYPAL_TOKEN_URL = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
 PAYPAL_TRANSACTION_URL = "https://api-m.sandbox.paypal.com/v1/reporting/transactions"

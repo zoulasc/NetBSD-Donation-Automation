@@ -4,9 +4,12 @@ import logging
 from threading import Thread
 
 from flask import Flask, render_template, request, session
-from files import process_file
-from models import Donation
-from utils import send_async_email, valid_uuid, arr_to_donation, dict_to_donation
+
+from config import send_thank_mail
+
+from config.utils import allowed_file, valid_uuid
+from config.models import Donation, list_to_donation, dict_to_donation
+
 from queries import DonationSQL, FeedbackSQL
 
 app = Flask(__name__)
@@ -21,6 +24,10 @@ logging.basicConfig(
 )
 logging.getLogger().addHandler(logging.StreamHandler())
 
+
+def send_async_email(app: Flask, receiver_email: str) -> None:
+    with app.app_context():
+        send_thank_mail(receiver_email)
 
 @app.route("/")
 def index() -> str:
@@ -58,9 +65,9 @@ def validate() -> str:
         return render_template("invalid.html", identifier=feedback_id)
 
     # Success
-    donation = arr_to_donation(donation[0])
-    session["donation"] = donation.__dict__
-
+    donation = list_to_donation(donation[0])
+    session['donation'] = donation.__dict__
+    
     logging.info(f"Feedback page created for {donation.confirmation_number}")
     logging.info(f"Validated {email} - {feedback_id}")
     return render_template("valid.html", fid=donation.confirmation_number, amount=float(donation.amount))
@@ -88,9 +95,9 @@ def feedback_by_mail():
         logging.info(f"Feedback already recieved {token}")
         return render_template("invalid.html", identifier=confirmation_no)
     # Success
-    donation = arr_to_donation(donation[0])
-    session["donation"] = donation.__dict__
-
+    donation = list_to_donation(donation[0])
+    session['donation'] = donation.__dict__
+    
     logging.info(f"Validated {token}")
     logging.info(f"Feedback page created for {donation.confirmation_number}")
     return render_template("valid.html", fid=donation.access_token, amount=donation.amount)

@@ -1,4 +1,4 @@
-"""models.py is the database query preperation layer for the feedback site."""
+"""queries.py is the database query preperation layer for the feedback site."""
 import logging
 
 from database import execute_query

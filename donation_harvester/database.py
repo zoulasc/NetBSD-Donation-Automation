@@ -4,8 +4,8 @@ and insert donation details into the database.
 """
 import logging
 import psycopg2
-from models import Donation
 from config import (get_db_connection, PREFIX)
+from config.models import Donation
 
 
 # SQL Query to insert donation_details into the database
