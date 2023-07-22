@@ -10,6 +10,7 @@ import sys
 import os
 import psycopg2
 
+from models import Donation
 from validate_email import validate_email
 
 # Get the current script's directory
@@ -74,7 +75,7 @@ def get_server(config) -> smtplib.SMTP:
         return None
 
 
-def send_url_mail(donations: List[Dict]) -> List[Dict]:
+def send_url_mail(donations: list[Donation]) -> list[Donation]:
     """
     Prepare email that contains the URL to the donation page.
     """
@@ -115,7 +116,7 @@ def send_url_mail(donations: List[Dict]) -> List[Dict]:
         return failed_donations
     return None
 
-def send_thank_mail(receiver) -> None:
+def send_thank_mail(receiver: str) -> None:
     """
     Prepare email that contains the thank you message.
     """
@@ -123,7 +124,7 @@ def send_thank_mail(receiver) -> None:
     sendmail(receiver, thank_text, get_server(config))
 
 
-def sendmail(receiver, msg, server) -> bool:
+def sendmail(receiver: str, msg: str, server: str) -> bool:
     """
     Send intended email to the receiver.
     """
