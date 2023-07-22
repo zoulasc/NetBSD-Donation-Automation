@@ -14,8 +14,8 @@ class Donation:
         email: str,
         date_time: int,
         vendor: str,
-        confirmation_number = None,
-        access_token = None,
+        confirmation_number=None,
+        access_token=None,
         quantity: int = 1,
     ) -> None:
         self.confirmation_number = utils.generate_confirmation_number() \

@@ -6,10 +6,10 @@ content %}
   <form style="text-align: left" method="POST" action="/store/{{fid}}" enctype="multipart/form-data">
     <div class="form-check">
       <p>Should we put your name on our public list of contributors?</p>
-        <input type="radio" name="answer1" id="Yes" value="1" checked />  
-      <label for="Yes">Yes</label><br />
-        <input type="radio" name="answer1" id="No" value="0" />  
-      <label for="No">No</label><br />
+        <input type="radio" name="answer_name" id="Yes_name" value="1" checked />  
+      <label for="Yes_name">Yes</label><br />
+        <input type="radio" name="answer_name" id="No_name" value="0" />  
+      <label for="No_name">No</label><br />
       <br />
       <label for="name" class="form-label"
         >If you answered yes above, how would you like your name to
@@ -29,10 +29,10 @@ content %}
       <p>
         Should we put your e-mail address on our public list of contributors?
       </p>
-        <input type="radio" name="answer2" id="Yes" value="1" checked />  
-      <label for="Yes">Yes</label><br />
-        <input type="radio" name="answer2" id="No" value="0" />  
-      <label for="No">No</label><br />
+        <input type="radio" name="answer_email" id="Yes_email" value="1" checked />  
+      <label for="Yes_email">Yes</label><br />
+        <input type="radio" name="answer_email" id="No_email" value="0" />  
+      <label for="No_email">No</label><br />
       <br />
       <label for="email" class="form-label"
         >If you answered yes above, what e-mail address would you like to
@@ -52,10 +52,10 @@ content %}
         May we inform you by direct e-mail of the need for similar assistance in
         the future?
       </p>
-        <input type="radio" name="answer3" id="Yes" value="1" checked />  
-      <label for="Yes">Yes</label><br />
-        <input type="radio" name="answer3" id="No" value="0" />  
-      <label for="No">No</label><br />
+        <input type="radio" name="answer_notification_email" id="Yes" value="1" checked />  
+      <label for="Yes_notification_email">Yes</label><br />
+        <input type="radio" name="answer_notification_email" id="No" value="0" />  
+      <label for="No_notification_email">No</label><br />
       <br />
       <label for="notification_email" class="form-label"
         >If you answered yes above, please indicate your preferred e-mail
@@ -69,13 +69,14 @@ content %}
         name="notification_email"
       />
       <br />
-    
+      {% if amount >= 1000 %}
         <label for="logo" class="form-label"
           >If you would like to have your logo displayed, please provide a logo in .png format, rendered for display on white background.</label
         >
         <input class="form-control" type="file" id="logo" name="logo" accept="image/*" />
-      
       <br />
+      {% endif %}
+
       <button type="submit" class="btn btn-primary">Submit</button>
     </div>
   </form>
@@ -87,5 +88,32 @@ content %}
   </p>
   <br /><br />
 </div>
+
+<script>
+ 
+  $(document).ready(function () {
+    // initial check
+    ['name', 'email', 'notification_email'].forEach((id) => {
+      const checkedValue = $(`input[name="answer_${id}"]:checked`).val();
+      $(`#${id}`).prop('disabled', checkedValue === '0');
+    });
+
+    // add event listener for name
+    $('input[name="answer_name"]').on('change', function() {
+      $('#name').prop('disabled', this.value === '0');
+    });
+
+    // add event listener for email
+    $('input[name="answer_email"]').on('change', function() {
+      $('#email').prop('disabled', this.value === '0');
+    });
+
+    // add event listener for notification_email
+    $('input[name="answer_notification_email"]').on('change', function() {
+      $('#notification_email').prop('disabled', this.value === '0');
+    });
+  });
+</script>
+
 
 {% endblock %}

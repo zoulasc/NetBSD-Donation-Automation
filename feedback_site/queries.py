@@ -4,6 +4,7 @@ import logging
 from database import execute_query
 from config import PREFIX
 
+
 class DonationSQL:
     """The Donation class represents a donation in the database."""
 
@@ -22,7 +23,6 @@ class DonationSQL:
     WHERE uuid = $1;
     EXECUTE get_donations_by_token(%s);
     """
-
 
     @classmethod
     def exists_by_email_and_confirmation(cls, email, confirmation_no):
@@ -55,9 +55,9 @@ class FeedbackSQL:
     INSERT INTO {PREFIX}.interaction VALUES($1, $2, $3, $4, $5, $6, $7, $8);
     EXECUTE insert_feedback(%s, %s, %s, %s, %s, %s, %s, %s);
     """
-    
-    SQL_GET_DONORS_THIS_YEAR = f""" 
-    SELECT i.name, 
+
+    SQL_GET_DONORS_THIS_YEAR = f"""
+    SELECT i.name,i.logo_filepath, 
         CASE WHEN i.answer2 THEN i.email ELSE NULL END
     FROM {PREFIX}.interaction AS i
     INNER JOIN {PREFIX}.information AS inf 
@@ -77,9 +77,9 @@ class FeedbackSQL:
         """Insert the feedback into the database."""
         logging.info(f"Insert feedback: {feedback_info}")
         return execute_query(cls.SQL_INSERT_FEEDBACK, *feedback_info.values())
-    
+
     @classmethod
-    def get_all_by_year(cls,year):
+    def get_all_by_year(cls, year):
         """Get donors who wanted to be listed this year."""
         logging.info(f"Get donors this year: {year}")
         return execute_query(cls.SQL_GET_DONORS_THIS_YEAR, year)
