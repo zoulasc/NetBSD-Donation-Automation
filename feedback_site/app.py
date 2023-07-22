@@ -104,11 +104,11 @@ def store(token: str) -> str:
 
     feedback_responses = {
         "confirmation_no": int(donation.confirmation_number),
-        "name_question": request.form.get("answer1"),
+        "name_question": request.form.get("answer_name"),
         "name": request.form.get("name", "Anonymous"),
-        "email_question": request.form.get("answer2"),
+        "email_question": request.form.get("answer_email"),
         "email": request.form.get("email"),
-        "notification_question": request.form.get("answer3"),
+        "notification_question": request.form.get("answer_notification_email"),
         "notification_email": request.form.get("notification_email", "-"),
         "logo_filepath": None,
     }
