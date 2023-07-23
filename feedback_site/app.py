@@ -73,7 +73,7 @@ def validate() -> str:
     
     logging.info(f"Feedback page created for {donation.confirmation_number}")
     logging.info(f"Validated {email} - {feedback_id}")
-    return render_template("valid.html", fid=donation.confirmation_number, amount=float(donation.amount))
+    return render_template("valid.html", fid=donation.access_token, amount=float(donation.amount))
 
 
 @app.route("/feedback")
