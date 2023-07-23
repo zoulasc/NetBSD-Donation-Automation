@@ -20,7 +20,6 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/goeksu/NetBSD-Donation-Automation.git
-cd NetBSD-Donation-Automation/donation_harvester
 ```
 
 Set the database up
