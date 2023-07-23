@@ -10,7 +10,7 @@ import sys
 import os
 import psycopg2
 
-from models import Donation
+from .models import Donation
 from validate_email import validate_email
 
 # Get the current script's directory
@@ -97,12 +97,12 @@ def send_url_mail(donations: list[Donation]) -> list[Donation]:
 
         # Create the email message
         msg = ack_text.format(
-            donor_name=donation["donor_name"],
-            amount=donation["amount"],
-            date=datetime.fromtimestamp(donation["date_time"]),
-            currency=donation["currency"],
-            confirmation_number=donation["confirmation_number"],
-            access_token=donation["access_token"],
+            donor_name=donation.donor_name,
+            amount=donation.amount,
+            date=datetime.fromtimestamp(donation.date_time),
+            currency=donation.currency,
+            confirmation_number=donation.confirmation_number,
+            access_token=donation.access_token,
             address=URL,
         )
 

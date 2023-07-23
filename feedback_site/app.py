@@ -9,11 +9,14 @@ from config import send_thank_mail
 
 from config.utils import allowed_file, valid_uuid
 from config.models import Donation, list_to_donation, dict_to_donation
+from files import process_file
 
 from queries import DonationSQL, FeedbackSQL
 
 app = Flask(__name__)
-app.secret_key = "any random string"
+# Set up session
+app.secret_key = "any random string" # TODO: Change this to a random string
+
 
 # Set up logging
 logging.basicConfig(
@@ -100,7 +103,7 @@ def feedback_by_mail():
     
     logging.info(f"Validated {token}")
     logging.info(f"Feedback page created for {donation.confirmation_number}")
-    return render_template("valid.html", fid=donation.access_token, amount=donation.amount)
+    return render_template("valid.html", fid=donation.access_token, amount=float(donation.amount))
 
 
 @app.route("/store/<string:token>", methods=["POST"])
@@ -117,7 +120,7 @@ def store(token: str) -> str:
         "email": request.form.get("email"),
         "notification_question": request.form.get("answer_notification_email"),
         "notification_email": request.form.get("notification_email", "-"),
-        "logo_filepath": None,
+        "logo_filepath": request.form.get("logo", None),
     }
 
     # Get image from the form
