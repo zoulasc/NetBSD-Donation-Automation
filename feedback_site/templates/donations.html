@@ -10,7 +10,11 @@
   <tr>
     <td>{{donor[0]}}</td>  
     <td>{{donor[2]}}</td>
-    <td><img src="./{{donor[1]}}"></img></td>
+    <td>
+    {% if not donor[1] == none: %}
+    <img src="./{{donor[1]}}"></img>
+    {% endif %}
+  </td>
   </tr>
 {% endfor %}
 {% else %}

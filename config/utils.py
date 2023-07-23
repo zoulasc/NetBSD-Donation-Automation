@@ -1,5 +1,5 @@
 """This module is for random stuff."""
-from uuid import UUID
+import uuid
 import logging
 import json
 

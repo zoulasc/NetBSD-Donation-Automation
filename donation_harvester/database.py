@@ -126,7 +126,8 @@ def insert_donation(donations: list[Donation]) -> None:
                 ),
             )
             logging.info(f"Successfully inserted {donation.confirmation_number} \
-                         | {donation.email} from {donation.vendor} into database.")
+                | {donation.email} from {donation.vendor} into database.")
+
         conn.commit()
         logging.info(
             f"Successfully inserted {len(donations)} donation details into database."
