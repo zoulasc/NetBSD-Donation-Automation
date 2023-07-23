@@ -10,3 +10,25 @@ is where users send feedbacks by a token or passcode.
 
 ### donation_harvester
 is where donations are got by apis and stored donor infos
+
+### Installation
+To install and run the project, you will need Python 3 and pip installed on your machine. You will also need a PostgreSQL server.
+
+Follow these steps to get the project up and running:
+
+Clone the repository:
+
+```bash
+git clone https://github.com/goeksu/NetBSD-Donation-Automation.git
+cd NetBSD-Donation-Automation/donation_harvester
+```
+
+Set the database up
+
+```bash
+cd config
+./set_db.sh -c
+```
+
+
+
