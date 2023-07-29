@@ -21,7 +21,7 @@ class Donation:
         self.confirmation_number = utils.generate_confirmation_number() \
             if not confirmation_number else confirmation_number
         self.donor_name = donor_name
-        self.currency = currency
+        self.currency = currency.upper()
         self.quantity = quantity
         self.email = email
         self.vendor = vendor

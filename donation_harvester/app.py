@@ -124,17 +124,26 @@ def main():
             vendor = None
 
         donations = get_donations_in_range(begin_date, end_date, vendor)
-        total_donation = 0
+        
+        # create a dictionary to hold total donations by currency
+        total_donations_by_currency = {}
         
         for donation in donations:
-            total_donation += float(donation.amount)
             donation.print_donation() if not args.total_only else None
             # Print all donations if total-only is not specified
+            
+            # sum donations by currency
+            if donation.currency not in total_donations_by_currency:
+                total_donations_by_currency[donation.currency] = float(donation.amount)
+            else:
+                total_donations_by_currency[donation.currency] += float(donation.amount)
+
         
         
-        print("TOTAL DONATION: ${:,.2f}".format(total_donation))
-        # Print total donation in a readable format
-        # Assuming all the donations are in USD
+        # Print total donations by currency
+        for currency, total in total_donations_by_currency.items():
+            print(f"TOTAL {currency}: {total:,.2f}")
+
         
         if args.json:
             json_output(donations, args.json)
