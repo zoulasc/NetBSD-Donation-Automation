@@ -57,6 +57,7 @@ def main():
         .timestamp()), help="The end date for listing donations (format: YYYY-MM-DD).")
     list_parser.add_argument("--json", nargs='?', const='donations.json', \
         help="Outputs the results as a JSON file. You can optionally specify the output file name.")
+    list_parser.add_argument("--total-only", action="store_true", help="Print only the total donation amount.")
 
     send_parser = subparsers.add_parser('send-deferred-emails', help="Send deferred emails.")
 
@@ -123,8 +124,18 @@ def main():
             vendor = None
 
         donations = get_donations_in_range(begin_date, end_date, vendor)
+        total_donation = 0
+        
         for donation in donations:
-            donation.print_donation()
+            total_donation += float(donation.amount)
+            donation.print_donation() if not args.total_only else None
+            # Print all donations if total-only is not specified
+        
+        
+        print("TOTAL DONATION: ${:,.2f}".format(total_donation))
+        # Print total donation in a readable format
+        # Assuming all the donations are in USD
+        
         if args.json:
             json_output(donations, args.json)
 
