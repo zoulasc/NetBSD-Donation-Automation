@@ -131,6 +131,9 @@ def store(token: str) -> str:
         if file:
             logging.info(f"Received file: {file.filename}")
             path = process_file(file, donation)
+            if path == 429:
+                logging.error(f"Error related to image attached")
+                return "Error related to file. Please do not exceed 1MB limit.",429
             feedback_responses["logo_filepath"] = path
         else:
             logging.info(f"No file received")
