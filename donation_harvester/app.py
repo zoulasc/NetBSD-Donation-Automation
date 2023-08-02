@@ -1,5 +1,6 @@
 """This is the entry point of the application."""
 import argparse
+from configparser import ConfigParser
 from datetime import datetime
 import logging
 from typing import List, Dict
@@ -25,12 +26,14 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S%z",
     )
     logging.getLogger().addHandler(logging.StreamHandler())
+    
+    config = ConfigParser()
+    config.read("config/config.ini", encoding="utf-8")
 
-    # Load credentials. TODO Use environment variables instead
-    paypal_client_id = "AUMGSf82bpVokGsmR59CRu3bNEppTQeCpX92tM-TYdBrRjjjFikidUtelVuhJDYAl_bySk_FpniFWmY_"
-    paypal_client_secret = "EMomA8GmT2MD0UiVAyS-2PsyH8kZYGxncVbqLaCtbVaL-8jO_K7OMjb4bJ94YJT8VFWLyCcMrWZWsvjM"
-    stripe_api_key = "sk_test_51NAtgCLWOZAy5SpfukpFqmUparmC3k1fZ0XURnV6o09EdmujE76eQjWtUGdhmOcrIPmVXApu3QACBps8LSy1jtXL00GBTG6CoE"
-
+    paypal_client_id = config["harvester"]["paypal_client_id"]
+    paypal_client_secret = config["harvester"]["paypal_client_secret"]
+    stripe_api_key = config["harvester"]["stripe_api_key"]
+    
     # Parse arguments
     parser = argparse.ArgumentParser(description="Donation Update System.")
     subparsers = parser.add_subparsers(dest='command', required=True)

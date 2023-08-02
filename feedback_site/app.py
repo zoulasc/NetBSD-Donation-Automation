@@ -1,4 +1,5 @@
 """app.py is the main entry point for the feedback site."""
+from configparser import ConfigParser
 import datetime
 import logging
 from threading import Thread
@@ -14,8 +15,13 @@ from files import process_file
 from queries import DonationSQL, FeedbackSQL
 
 app = Flask(__name__)
+
+
+config = ConfigParser()
+config.read("config/config.ini", encoding="utf-8")
+
 # Set up session
-app.secret_key = "any random string" # TODO: Change this to a random string
+app.secret_key = config["website"]["secret_key"] 
 AMOUNT_LOGO_LIMIT = 1000 # USD
 
 
