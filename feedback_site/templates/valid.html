@@ -4,6 +4,11 @@ content %}
   <h1 style="text-align: center">Please provide your feedback</h1>
   <br /><br />
   <form style="text-align: left" method="POST" action="/store/{{fid}}" enctype="multipart/form-data">
+    {% if error is defined %}
+      <div class="alert alert-danger" role="alert">
+        An error occured: {{ error }}
+      </div>
+      {% endif %}
     <div class="form-check">
       <p>Should we put your name on our public list of contributors?</p>
         <input type="radio" name="answer_name" id="Yes_name" value="1" checked />  

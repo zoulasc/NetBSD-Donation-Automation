@@ -124,27 +124,24 @@ def main():
             vendor = None
 
         donations = get_donations_in_range(begin_date, end_date, vendor)
-        
+
         # create a dictionary to hold total donations by currency
         total_donations_by_currency = {}
-        
+
         for donation in donations:
-            donation.print_donation() if not args.total_only else None
             # Print all donations if total-only is not specified
-            
+            if not args.total_only:
+                donation.print_donation()
             # sum donations by currency
             if donation.currency not in total_donations_by_currency:
                 total_donations_by_currency[donation.currency] = float(donation.amount)
             else:
                 total_donations_by_currency[donation.currency] += float(donation.amount)
 
-        
-        
         # Print total donations by currency
         for currency, total in total_donations_by_currency.items():
             print(f"TOTAL {currency}: {total:,.2f}")
 
-        
         if args.json:
             json_output(donations, args.json)
 
@@ -161,7 +158,7 @@ def main():
      # If runned without required arguments
     else:
         logging.info("No required arguments provided, program is exiting.")
-        
+
 def sendmail(donations):
     """
     This function send mails to the donors, and insert the failed ones into the database.

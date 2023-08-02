@@ -2,6 +2,20 @@
 {% block title %}Validation{% endblock %}
 {% block content %}
 <div class='container'>
+
+    {% if error is defined %}
+    {% if error == -1 %}
+    <div class="alert alert-danger" role="alert">
+        No matching donation found with the given information!
+    </div>
+        {% else%}
+
+    
+    <div class="alert alert-warning" role="alert">
+        The feedback for the passcode {{error}} is already recorded.
+    </div>
+    {% endif %}
+    {% endif %}
     
     <h1 style="text-align:center;">Please Validate Your Donation Details</h1>
     <br/>

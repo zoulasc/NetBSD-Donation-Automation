@@ -22,10 +22,6 @@ def json_output(donations, filename: str='donations.json') -> None:
             )
     logging.info(f"Successfully outputted results as {filename}")
 
-def allowed_file(filename: str) -> bool:
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 def valid_uuid(uuid_string: str) -> bool:
     """Check if the provided string is a valid UUID."""
     try:
