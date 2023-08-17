@@ -27,9 +27,6 @@ class DonationSQL:
     @classmethod
     def exists_by_email_and_confirmation(cls, email, confirmation_no):
         """Check if a donation exists by email and confirmation number."""
-        logging.info(
-            f"Check donation by email and confirmation: {email} {confirmation_no}"
-        )
         return execute_query(
             cls.SQL_CHECK_EXISTS_BY_EMAIL_AND_CONFIRMATION, email, confirmation_no
         )

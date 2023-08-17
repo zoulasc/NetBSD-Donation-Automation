@@ -4,6 +4,7 @@ import logging
 from PIL import Image
 from werkzeug.utils import secure_filename
 from config.models import Donation
+from config.utils import generate_access_token
 
 # Set up allowed file extensions for logo
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
@@ -71,7 +72,7 @@ def process_file(file, donation) -> str:
     prepare_file()
 
     filename = secure_filename(
-        donation.access_token + "." + file.filename.rsplit(".", 1)[-1]
+        generate_access_token() + "." + file.filename.rsplit(".", 1)[-1]
     )
 
     # name the file with the access token and the file extension

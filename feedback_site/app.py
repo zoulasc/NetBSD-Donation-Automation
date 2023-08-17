@@ -5,23 +5,37 @@ import logging
 from threading import Thread
 
 from flask import Flask, render_template, request, session
+from flask_talisman import Talisman
+
 
 from config import send_thank_mail
 
-from config.utils import valid_uuid
+from config.utils import valid_uuid, check_length
 from config.models import Donation, list_to_donation, dict_to_donation
 
 from files import process_file
 from queries import DonationSQL, FeedbackSQL
 
-app = Flask(__name__)
+csp = {
+    'default-src': '\'self\'',
+    'script-src': '\'self\'',
+    'style-src': '\'self\''
+}
 
+app = Flask(__name__)
+Talisman(app,
+    content_security_policy=csp,
+    content_security_policy_nonce_in=['script-src'])
 
 config = ConfigParser()
 config.read("config/config.ini", encoding="utf-8")
 
 # Set up session
 app.secret_key = config["website"]["secret_key"] 
+app.config.update(
+    SESSION_COOKIE_SAMESITE='Strict'
+)
+
 AMOUNT_LOGO_LIMIT = 1000 # USD
 
 
@@ -62,11 +76,15 @@ def validate() -> str:
     """Validate the provided feedback ID and email."""
     feedback_id = request.form.get("feed")
     email = request.form.get("email")
+    
+    if not check_length(feedback_id) or not check_length(email):
+        logging.info(f"Invalid length: {email} - {feedback_id}")
+        return render_template("index.html",error= -1)
 
     # Check if a donation exists for the given email and feedback ID
     donation = DonationSQL.exists_by_email_and_confirmation(email, feedback_id)
     if not donation:
-        logging.info(f"No donation found: {email} - {feedback_id}")
+        logging.info(f"No donation found with related info.")
         return render_template("index.html",error= -1)
     logging.info(f"Donation found with: {email} - {feedback_id}")
 
@@ -102,7 +120,7 @@ def feedback_by_mail():
     confirmation_no = donation[0][0]
     if FeedbackSQL.exists_by_confirmation(confirmation_no)[0][0]:
         logging.info(f"Feedback already recieved {token}")
-        return render_template("index.html", error=feedback_id)
+        return render_template("index.html", error=confirmation_no)
     # Success
     donation = list_to_donation(donation[0])
     session['donation'] = donation.__dict__
@@ -112,7 +130,7 @@ def feedback_by_mail():
 
 
 @app.route("/store/<string:token>", methods=["POST"])
-def store(token: str) -> str:
+def store(token) -> str:
     """Store feedback responses and handle optional notification email."""
 
     donation = dict_to_donation(session["donation"])
@@ -127,6 +145,16 @@ def store(token: str) -> str:
         "notification_email": request.form.get("notification_email", "-"),
         "logo_filepath": request.form.get("logo", None),
     }
+    
+    for key, value in feedback_responses.items():
+        if key.endswith("confirmation_no") or not value:
+            continue
+        if not check_length(value):
+            logging.info(f"Invalid length.")
+            return render_template("valid.html",
+                                       fid=donation.access_token,
+                                       amount=float(donation.amount),
+                                       error="Response too long")
 
     # Get image from the form
     # Save the logo if donation amount exceeds $1000 and image is provided
