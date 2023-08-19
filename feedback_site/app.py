@@ -25,7 +25,8 @@ csp = {
 app = Flask(__name__)
 Talisman(app,
     content_security_policy=csp,
-    content_security_policy_nonce_in=['script-src'])
+    content_security_policy_nonce_in=['script-src'],
+    force_https=False) # TODO for development only
 
 config = ConfigParser()
 config.read("config/config.ini", encoding="utf-8")
@@ -102,7 +103,7 @@ def validate() -> str:
 
 
 @app.route("/feedback")
-def feedback_by_mail():
+def feedback_by_mail() -> str:
     """Handle feedback by the url provided via email."""
     token = request.args.get("token")
 

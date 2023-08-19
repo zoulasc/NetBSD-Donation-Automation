@@ -14,7 +14,7 @@ from paypalapi import PaypalAPI
 from config import send_url_mail
 from config.utils import json_output
 
-def main():
+def main() -> None:
     """
     Main function to orchestrate the operations regarding to arguments given.
     """
@@ -162,7 +162,7 @@ def main():
     else:
         logging.info("No required arguments provided, program is exiting.")
 
-def sendmail(donations):
+def sendmail(donations) -> None:
     """
     This function send mails to the donors, and insert the failed ones into the database.
     """

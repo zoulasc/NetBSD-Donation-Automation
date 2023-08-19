@@ -1,0 +1,21 @@
+Done:
+*confirmation numbers are now 10 digits.
+*defined header  SameSite=Strict
+*edited the logs, strings got from user is not printed unless verified to be a  donor
+*defined content security policy
+*if user input is more than 50 chars, throwing error
+*jquery and bootstrap are stored locally
+*files are stored in different uuid
+*fixed uuid error
+*fixed feedback_id error
+*function type signatures
+
+Waiting:
+*didnt mentioned about setting secure secret in installation.
+*still storing the first, last and email credentials in the db
+*read-only keys
+*creating role and schema in db
+*.in still exists
+*server header still exists
+*donation page is still dynamic
+*PIL still in use

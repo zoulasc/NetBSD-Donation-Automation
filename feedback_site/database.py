@@ -6,7 +6,7 @@ import psycopg2
 from config import get_db_connection
 
 
-def execute_query(query: str, *params: Any):
+def execute_query(query: str, *params: Any) -> Any:
     """
     Execute a query with given parameters and return the result.
     """

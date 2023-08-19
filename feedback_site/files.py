@@ -24,12 +24,12 @@ FRONT_PAGE_IMAGE_SIZE_X = 150
 FRONT_PAGE_IMAGE_SIZE_Y = 150
 
 
-def allowed_file(filename):
+def allowed_file(filename) -> bool:
     """this function checks if the file extension is allowed"""
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def check_size(file):
+def check_size(file) -> bool:
     """Checks size of file"""
     file.seek(0, os.SEEK_END)
     file_length = file.tell()
@@ -40,7 +40,7 @@ def check_size(file):
     file.seek(0, 0)  # Reset file pointer
     return True
 
-def calculate_dimensions(max_height, max_width, aspect_ratio):
+def calculate_dimensions(max_height, max_width, aspect_ratio) -> tuple:
     """Calculates the dimensions of the image based on the aspect ratio and the max height and width"""
     if aspect_ratio * max_height <= max_width:
         return max_height, int(max_height * aspect_ratio)
@@ -48,13 +48,13 @@ def calculate_dimensions(max_height, max_width, aspect_ratio):
     return int(max_width / aspect_ratio), max_width
 
 
-def prepare_file():
+def prepare_file() -> None:
     """Checks if the static folder exists and creates it if it doesn't"""
     if not os.path.exists("static"):
         os.makedirs("static")
 
 
-def save_file(filename, img):
+def save_file(filename, img) -> str:
     """"Save the file to the static folder"""
     path = f"static/{filename}"
     logging.info(f"Saving file: {path}")
