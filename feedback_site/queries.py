@@ -25,17 +25,14 @@ class DonationSQL:
     """
 
     @classmethod
-    def exists_by_email_and_confirmation(cls, email, confirmation_no):
+    def exists_by_email_and_confirmation(cls, email, confirmation_no) -> str:
         """Check if a donation exists by email and confirmation number."""
-        logging.info(
-            f"Check donation by email and confirmation: {email} {confirmation_no}"
-        )
         return execute_query(
             cls.SQL_CHECK_EXISTS_BY_EMAIL_AND_CONFIRMATION, email, confirmation_no
         )
 
     @classmethod
-    def exists_by_token(cls, token):
+    def exists_by_token(cls, token) -> str:
         """Get a donation by its token."""
         logging.info(f"Check donation by token: {token}")
         return execute_query(cls.SQL_EXISTS_BY_TOKEN, token)
@@ -67,19 +64,19 @@ class FeedbackSQL:
     """
 
     @classmethod
-    def exists_by_confirmation(cls, confirmation_no):
+    def exists_by_confirmation(cls, confirmation_no) -> str:
         """Check if a feedback exists by confirmation number."""
         logging.info(f"Check feedback by confirmation: {confirmation_no}")
         return execute_query(cls.SQL_CHECK_EXISTS_BY_CONFIRMATION, confirmation_no)
 
     @classmethod
-    def insert(cls, feedback_info):
+    def insert(cls, feedback_info) -> str:
         """Insert the feedback into the database."""
         logging.info(f"Insert feedback: {feedback_info}")
         return execute_query(cls.SQL_INSERT_FEEDBACK, *feedback_info.values())
 
     @classmethod
-    def get_all_by_year(cls, year):
+    def get_all_by_year(cls, year) -> str:
         """Get donors who wanted to be listed this year."""
         logging.info(f"Get donors this year: {year}")
         return execute_query(cls.SQL_GET_DONORS_THIS_YEAR, year)

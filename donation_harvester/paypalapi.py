@@ -1,12 +1,16 @@
 """This module contains the Paypal API operations."""
 import base64
+from configparser import ConfigParser
 import logging
 from datetime import datetime, timezone
 import requests
 from config.models import Donation
 
-PAYPAL_TOKEN_URL = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
-PAYPAL_TRANSACTION_URL = "https://api-m.sandbox.paypal.com/v1/reporting/transactions"
+config = ConfigParser()
+config.read("config/config.ini", encoding="utf-8")
+
+PAYPAL_TOKEN_URL = config["harvester"]["PAYPAL_TOKEN_URL"]
+PAYPAL_TRANSACTION_URL = config["harvester"]["PAYPAL_TRANSACTION_URL"]
 
 class PaypalAPI:
     """This is a class for Paypal API."""

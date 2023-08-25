@@ -11,7 +11,7 @@
     <td>{{donor[0]}}</td>  
     <td>{{donor[2]}}</td>
     <td>
-    {% if not donor[1] == none: %}
+    {% if not donor[1] == none and not donor[1] == "Empty": %}
     <img src="./{{donor[1]}}"></img>
     {% endif %}
   </td>

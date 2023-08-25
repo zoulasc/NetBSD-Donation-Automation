@@ -1,5 +1,6 @@
 """This is the entry point of the application."""
 import argparse
+from configparser import ConfigParser
 from datetime import datetime
 import logging
 from typing import List, Dict
@@ -13,7 +14,7 @@ from paypalapi import PaypalAPI
 from config import send_url_mail
 from config.utils import json_output
 
-def main():
+def main() -> None:
     """
     Main function to orchestrate the operations regarding to arguments given.
     """
@@ -25,12 +26,14 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S%z",
     )
     logging.getLogger().addHandler(logging.StreamHandler())
+    
+    config = ConfigParser()
+    config.read("config/config.ini", encoding="utf-8")
 
-    # Load credentials. TODO Use environment variables instead
-    paypal_client_id = "AUMGSf82bpVokGsmR59CRu3bNEppTQeCpX92tM-TYdBrRjjjFikidUtelVuhJDYAl_bySk_FpniFWmY_"
-    paypal_client_secret = "EMomA8GmT2MD0UiVAyS-2PsyH8kZYGxncVbqLaCtbVaL-8jO_K7OMjb4bJ94YJT8VFWLyCcMrWZWsvjM"
-    stripe_api_key = "sk_test_51NAtgCLWOZAy5SpfukpFqmUparmC3k1fZ0XURnV6o09EdmujE76eQjWtUGdhmOcrIPmVXApu3QACBps8LSy1jtXL00GBTG6CoE"
-
+    paypal_client_id = config["harvester"]["paypal_client_id"]
+    paypal_client_secret = config["harvester"]["paypal_client_secret"]
+    stripe_api_key = config["harvester"]["stripe_api_key"]
+    
     # Parse arguments
     parser = argparse.ArgumentParser(description="Donation Update System.")
     subparsers = parser.add_subparsers(dest='command', required=True)
@@ -124,27 +127,24 @@ def main():
             vendor = None
 
         donations = get_donations_in_range(begin_date, end_date, vendor)
-        
+
         # create a dictionary to hold total donations by currency
         total_donations_by_currency = {}
-        
+
         for donation in donations:
-            donation.print_donation() if not args.total_only else None
             # Print all donations if total-only is not specified
-            
+            if not args.total_only:
+                donation.print_donation()
             # sum donations by currency
             if donation.currency not in total_donations_by_currency:
                 total_donations_by_currency[donation.currency] = float(donation.amount)
             else:
                 total_donations_by_currency[donation.currency] += float(donation.amount)
 
-        
-        
         # Print total donations by currency
         for currency, total in total_donations_by_currency.items():
             print(f"TOTAL {currency}: {total:,.2f}")
 
-        
         if args.json:
             json_output(donations, args.json)
 
@@ -161,8 +161,8 @@ def main():
      # If runned without required arguments
     else:
         logging.info("No required arguments provided, program is exiting.")
-        
-def sendmail(donations):
+
+def sendmail(donations) -> None:
     """
     This function send mails to the donors, and insert the failed ones into the database.
     """

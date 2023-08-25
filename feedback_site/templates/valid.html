@@ -1,9 +1,14 @@
 {% extends 'base.html' %} {% block title %}Feedback{% endblock %} {% block
 content %}
 <div class="container">
-  <h1 style="text-align: center">Please provide your feedback</h1>
+  <h1 class="center-text">Please provide your feedback</h1>
   <br /><br />
-  <form style="text-align: left" method="POST" action="/store/{{fid}}" enctype="multipart/form-data">
+  <form class="left-text" method="POST" action="/store/{{fid}}" enctype="multipart/form-data">
+    {% if error is defined %}
+      <div class="alert alert-danger" role="alert">
+        An error occured: {{ error }}
+      </div>
+      {% endif %}
     <div class="form-check">
       <p>Should we put your name on our public list of contributors?</p>
         <input type="radio" name="answer_name" id="Yes_name" value="1" checked />  
@@ -92,7 +97,7 @@ content %}
   <br /><br />
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
  
   $(document).ready(function () {
     // initial check
